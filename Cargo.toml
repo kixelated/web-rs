@@ -17,7 +17,6 @@ wasm-bindgen-futures = "0.4"
 thiserror = "1"
 js-sys = "0.3.70"
 tokio = { version = "1", features = ["sync", "macros"] }
-bytes = "1"
 
 derive_more = { version = "1", features = ["from", "deref", "deref_mut"] }
 
@@ -37,4 +36,12 @@ features = [
 	"VideoMatrixCoefficients",
 	"VideoColorPrimaries",
 	"VideoTransferCharacteristics",
+	"VideoEncoder",
+	"VideoEncoderInit",
+	"VideoEncoderConfig",
+	"LatencyMode",
+	"AlphaOption",
+	"EncodedAudioChunk",
+	"EncodedAudioChunkInit",
+	"EncodedAudioChunkType",
 ]
