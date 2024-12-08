@@ -23,9 +23,12 @@ jobs:
       # Set RUSTFLAGS
       - run: echo "RUSTFLAGS=--cfg=web_sys_unstable_apis" >> $GITHUB_ENV
 
+      # Cache rust compilation for speed
+      - uses: Swatinem/rust-cache@v2
+
       # Make sure u guys don't write bad code
       - run: cargo check
-      - run: cargo clippy --no-deps
+      - run: cargo clippy -D warnings
       - run: cargo fmt --check
 
       # Check for unused dependencies
