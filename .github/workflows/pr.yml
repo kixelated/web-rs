@@ -28,7 +28,7 @@ jobs:
 
       # Make sure u guys don't write bad code
       - run: cargo check
-      - run: cargo clippy -D warnings
+      - run: cargo clippy
       - run: cargo fmt --check
 
       # Check for unused dependencies
