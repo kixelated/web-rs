@@ -1,4 +1,4 @@
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct VideoColorSpaceConfig {
     inner: web_sys::VideoColorSpaceInit,
 }
@@ -40,6 +40,12 @@ impl VideoColorSpaceConfig {
 impl From<&VideoColorSpaceConfig> for web_sys::VideoColorSpaceInit {
     fn from(this: &VideoColorSpaceConfig) -> Self {
         this.inner.clone()
+    }
+}
+
+impl From<web_sys::VideoColorSpaceInit> for VideoColorSpaceConfig {
+    fn from(inner: web_sys::VideoColorSpaceInit) -> Self {
+        Self { inner }
     }
 }
 

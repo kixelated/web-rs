@@ -1,0 +1,53 @@
+[package]
+name = "web-codecs"
+description = "WASM bindings for Web Codecs"
+authors = ["Luke Curley"]
+repository = "https://github.com/kixelated/web-rs"
+license = "MIT OR Apache-2.0"
+
+version = "0.3.2"
+edition = "2021"
+
+categories = ["wasm", "multimedia", "web-programming", "api-bindings"]
+
+[dependencies]
+wasm-bindgen = "0.2"
+wasm-bindgen-futures = "0.4"
+
+thiserror = "1"
+js-sys = "0.3.70"
+tokio = { version = "1", features = ["sync", "macros"] }
+bytes = "1"
+
+derive_more = { version = "1", features = [
+	"from",
+	"deref",
+	"deref_mut",
+	"display",
+] }
+
+[dependencies.web-sys]
+version = "0.3.70"
+features = [
+	"VideoDecoder",
+	"VideoDecoderInit",
+	"VideoDecoderConfig",
+	"VideoFrame",
+	"VideoColorSpace",
+	"VideoColorSpaceInit",
+	"EncodedVideoChunk",
+	"EncodedVideoChunkInit",
+	"EncodedVideoChunkType",
+	"HardwareAcceleration",
+	"VideoMatrixCoefficients",
+	"VideoColorPrimaries",
+	"VideoTransferCharacteristics",
+	"VideoEncoder",
+	"VideoEncoderInit",
+	"VideoEncoderConfig",
+	"LatencyMode",
+	"AlphaOption",
+	"EncodedAudioChunk",
+	"EncodedAudioChunkInit",
+	"EncodedAudioChunkType",
+]

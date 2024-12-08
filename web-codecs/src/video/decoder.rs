@@ -1,17 +1,36 @@
+use bytes::{Bytes, BytesMut};
 use tokio::sync::{mpsc, watch};
 use wasm_bindgen::prelude::*;
 
 use super::{Dimensions, VideoColorSpaceConfig, VideoFrame};
 use crate::{EncodedFrame, Error};
 
-#[derive(Debug)]
+#[derive(Debug, Default, Clone)]
 pub struct VideoDecoderConfig {
+    /// The codec mimetype string.
     pub codec: String,
+
+    /// The resolution of the media.
+    /// Neither width nor height can be zero.
     pub resolution: Option<Dimensions>,
+
+    /// The resolution that the media should be displayed at.
+    /// Neither width nor height can be zero.
     pub display: Option<Dimensions>,
+
+    /// Color stuff.
     pub color_space: Option<VideoColorSpaceConfig>,
-    pub description: Option<Vec<u8>>,
+
+    /// Some codec formats use a description to configure the decoder.
+    /// ex. For h264:
+    ///   - If present: AVC format, with the SPS/PPS in this description.
+    ///   - If absent: Annex-B format, with the SPS/PPS before each keyframe.
+    pub description: Option<Bytes>,
+
+    /// Optionally require or disable hardware acceleration.
     pub hardware_acceleration: Option<bool>,
+
+    /// Optionally optimize for latency.
     pub latency_optimized: Option<bool>,
 }
 
@@ -19,15 +38,12 @@ impl VideoDecoderConfig {
     pub fn new<T: Into<String>>(codec: T) -> Self {
         Self {
             codec: codec.into(),
-            resolution: None,
-            color_space: None,
-            display: None,
-            description: None,
-            hardware_acceleration: None,
-            latency_optimized: None,
+            ..Default::default()
         }
     }
 
+    /// Check if the configuration is supported by this browser.
+    /// Returns an error if the configuration is invalid, and false if just unsupported.
     pub async fn is_supported(&self) -> Result<bool, Error> {
         let res = wasm_bindgen_futures::JsFuture::from(web_sys::VideoDecoder::is_config_supported(
             &self.into(),
@@ -42,7 +58,22 @@ impl VideoDecoderConfig {
         Ok(supported)
     }
 
-    pub fn configure(self) -> Result<(VideoDecoder, VideoDecoded), Error> {
+    pub fn is_valid(&self) -> Result<(), Error> {
+        if self
+            .resolution
+            .map_or(true, |d| d.width == 0 || d.height == 0)
+        {
+            return Err(Error::InvalidDimensions);
+        }
+
+        if self.display.map_or(true, |d| d.width == 0 || d.height == 0) {
+            return Err(Error::InvalidDimensions);
+        }
+
+        Ok(())
+    }
+
+    pub fn build(self) -> Result<(VideoDecoder, VideoDecoded), Error> {
         let (frames_tx, frames_rx) = mpsc::unbounded_channel();
         let (closed_tx, closed_rx) = watch::channel(Ok(()));
         let closed_tx2 = closed_tx.clone();
@@ -116,6 +147,59 @@ impl From<&VideoDecoderConfig> for web_sys::VideoDecoderConfig {
         }
 
         config
+    }
+}
+
+impl From<web_sys::VideoDecoderConfig> for VideoDecoderConfig {
+    fn from(this: web_sys::VideoDecoderConfig) -> Self {
+        let resolution = match (this.get_coded_width(), this.get_coded_height()) {
+            (Some(width), Some(height)) if width != 0 && height != 0 => {
+                Some(Dimensions { width, height })
+            }
+            _ => None,
+        };
+
+        let display = match (
+            this.get_display_aspect_width(),
+            this.get_display_aspect_height(),
+        ) {
+            (Some(width), Some(height)) if width != 0 && height != 0 => {
+                Some(Dimensions { width, height })
+            }
+            _ => None,
+        };
+
+        let color_space = this.get_color_space().map(VideoColorSpaceConfig::from);
+
+        let description = this.get_description().map(|d| {
+            // TODO: An ArrayBuffer, a TypedArray, or a DataView containing a sequence of codec-specific bytes, commonly known as "extradata".
+            let buffer = js_sys::Uint8Array::new(&d);
+            let size = buffer.byte_length() as usize;
+
+            let mut payload = BytesMut::with_capacity(size);
+            payload.resize(size, 0);
+            buffer.copy_to(&mut payload);
+
+            payload.freeze()
+        });
+
+        let hardware_acceleration = match this.get_hardware_acceleration() {
+            Some(web_sys::HardwareAcceleration::PreferHardware) => Some(true),
+            Some(web_sys::HardwareAcceleration::PreferSoftware) => Some(false),
+            _ => None,
+        };
+
+        let latency_optimized = this.get_optimize_for_latency();
+
+        Self {
+            codec: this.get_codec(),
+            resolution,
+            display,
+            color_space,
+            description,
+            hardware_acceleration,
+            latency_optimized,
+        }
     }
 }
 

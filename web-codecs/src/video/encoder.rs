@@ -3,16 +3,23 @@ use wasm_bindgen::prelude::*;
 
 use crate::{EncodedFrame, Error};
 
-use super::{Dimensions, VideoFrame};
+use super::{Dimensions, VideoDecoderConfig, VideoFrame};
 
-#[derive(Debug)]
-pub enum BitrateMode {
+use derive_more::Display;
+
+#[derive(Debug, Display, Clone, Copy)]
+pub enum EncoderBitrateMode {
+    #[display("constant")]
     Constant,
+
+    #[display("variable")]
     Variable,
+
+    #[display("quantizer")]
     Quantizer,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Default, Clone)]
 pub struct VideoEncoderConfig {
     pub codec: String,
     pub resolution: Dimensions,
@@ -23,7 +30,7 @@ pub struct VideoEncoderConfig {
     pub frame_rate: Option<f64>,       // frames per second
     pub alpha_preserved: Option<bool>, // keep alpha channel
     pub scalability_mode: Option<String>,
-    pub bitrate_mode: Option<BitrateMode>,
+    pub bitrate_mode: Option<EncoderBitrateMode>,
 }
 
 impl VideoEncoderConfig {
@@ -56,23 +63,48 @@ impl VideoEncoderConfig {
         Ok(supported)
     }
 
-    pub fn configure(self) -> Result<(VideoEncoder, VideoEncoded), Error> {
+    pub fn is_valid(&self) -> Result<(), Error> {
+        if self.resolution.width == 0 || self.resolution.height == 0 {
+            return Err(Error::InvalidDimensions);
+        }
+
+        if let Some(display) = self.display {
+            if display.width == 0 || display.height == 0 {
+                return Err(Error::InvalidDimensions);
+            }
+        }
+
+        Ok(())
+    }
+
+    pub fn init(self) -> Result<(VideoEncoder, VideoEncoded), Error> {
         let (frames_tx, frames_rx) = mpsc::unbounded_channel();
         let (closed_tx, closed_rx) = watch::channel(Ok(()));
+        let (config_tx, config_rx) = watch::channel(None);
         let closed_tx2 = closed_tx.clone();
 
         let on_error = Closure::wrap(Box::new(move |e: JsValue| {
             closed_tx.send_replace(Err(Error::from(e))).ok();
         }) as Box<dyn FnMut(_)>);
 
-        let on_frame = Closure::wrap(Box::new(move |e: JsValue| {
-            let frame: web_sys::EncodedVideoChunk = e.unchecked_into();
+        let on_frame = Closure::wrap(Box::new(move |frame: JsValue, meta: JsValue| {
+            // First parameter is the frame, second optional parameter is metadata.
+            let frame: web_sys::EncodedVideoChunk = frame.unchecked_into();
             let frame = EncodedFrame::from(frame);
+
+            if let Ok(metadata) = meta.dyn_into::<js_sys::Object>() {
+                // TODO handle metadata
+                if let Ok(config) = js_sys::Reflect::get(&metadata, &"decoderConfig".into()) {
+                    let config: web_sys::VideoDecoderConfig = config.unchecked_into();
+                    let config = VideoDecoderConfig::from(config);
+                    config_tx.send_replace(Some(config));
+                }
+            }
 
             if frames_tx.send(frame).is_err() {
                 closed_tx2.send_replace(Err(Error::Dropped)).ok();
             }
-        }) as Box<dyn FnMut(_)>);
+        }) as Box<dyn FnMut(_, _)>);
 
         let init = web_sys::VideoEncoderInit::new(
             on_error.as_ref().unchecked_ref(),
@@ -90,6 +122,7 @@ impl VideoEncoderConfig {
         let decoded = VideoEncoded {
             frames: frames_rx,
             closed: closed_rx,
+            config: config_rx,
         };
 
         Ok((decoder, decoded))
@@ -142,7 +175,7 @@ impl From<&VideoEncoderConfig> for web_sys::VideoEncoderConfig {
             config.set_scalability_mode(value);
         }
 
-        if let Some(value) = &this.bitrate_mode {
+        if let Some(_value) = &this.bitrate_mode {
             // TODO not supported yet
         }
 
@@ -157,7 +190,7 @@ pub struct VideoEncoder {
     #[allow(dead_code)]
     on_error: Closure<dyn FnMut(JsValue)>,
     #[allow(dead_code)]
-    on_frame: Closure<dyn FnMut(JsValue)>,
+    on_frame: Closure<dyn FnMut(JsValue, JsValue)>,
 }
 
 impl VideoEncoder {
@@ -181,6 +214,7 @@ impl Drop for VideoEncoder {
 pub struct VideoEncoded {
     frames: mpsc::UnboundedReceiver<EncodedFrame>,
     closed: watch::Receiver<Result<(), Error>>,
+    config: watch::Receiver<Option<VideoDecoderConfig>>,
 }
 
 impl VideoEncoded {
@@ -190,5 +224,16 @@ impl VideoEncoded {
             frame = self.frames.recv() => Ok(frame),
             Ok(()) = self.closed.changed() => Err(self.closed.borrow().clone().err().unwrap()),
         }
+    }
+
+    pub async fn config(&self) -> Result<VideoDecoderConfig, Error> {
+        Ok(self
+            .config
+            .clone()
+            .wait_for(|config| config.is_some())
+            .await
+            .map_err(|_| Error::Dropped)?
+            .clone()
+            .unwrap())
     }
 }
