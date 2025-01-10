@@ -115,8 +115,8 @@ impl From<&VideoDecoderConfig> for web_sys::VideoDecoderConfig {
 		}
 
 		if let Some(Dimensions { width, height }) = this.display {
-			config.set_display_aspect_height(height);
 			config.set_display_aspect_width(width);
+			config.set_display_aspect_height(height);
 		}
 
 		if let Some(description) = &this.description {
@@ -207,7 +207,7 @@ impl VideoDecoder {
 
 		let chunk = web_sys::EncodedVideoChunkInit::new(
 			&js_sys::Uint8Array::from(frame.payload.as_ref()),
-			frame.timestamp,
+			frame.timestamp.as_micros() as _,
 			chunk_type,
 		);
 

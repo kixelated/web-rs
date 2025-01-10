@@ -1,7 +1,12 @@
+use std::{cell::RefCell, rc::Rc};
+
 use tokio::sync::{mpsc, watch};
 use wasm_bindgen::prelude::*;
 
-use crate::{EncodedFrame, Error};
+use crate::{
+	units::{Duration, Timestamp},
+	EncodedFrame, Error,
+};
 
 use super::{Dimensions, VideoDecoderConfig, VideoFrame};
 
@@ -31,6 +36,10 @@ pub struct VideoEncoderConfig {
 	pub alpha_preserved: Option<bool>, // keep alpha channel
 	pub scalability_mode: Option<String>,
 	pub bitrate_mode: Option<EncoderBitrateMode>,
+
+	// NOTE: This is a custom configuration
+	/// The maximum duration of a Group of Pictures (GOP) before forcing a new keyframe.
+	pub max_gop_duration: Option<Duration>, // seconds
 }
 
 impl VideoEncoderConfig {
@@ -46,6 +55,7 @@ impl VideoEncoderConfig {
 			alpha_preserved: None,
 			scalability_mode: None,
 			bitrate_mode: None,
+			max_gop_duration: None,
 		}
 	}
 
@@ -79,46 +89,9 @@ impl VideoEncoderConfig {
 		let (frames_tx, frames_rx) = mpsc::unbounded_channel();
 		let (closed_tx, closed_rx) = watch::channel(Ok(()));
 		let (config_tx, config_rx) = watch::channel(None);
-		let closed_tx2 = closed_tx.clone();
 
-		let on_error = Closure::wrap(Box::new(move |e: JsValue| {
-			closed_tx.send_replace(Err(Error::from(e))).ok();
-		}) as Box<dyn FnMut(_)>);
-
-		let on_frame = Closure::wrap(Box::new(move |frame: JsValue, meta: JsValue| {
-			// First parameter is the frame, second optional parameter is metadata.
-			let frame: web_sys::EncodedVideoChunk = frame.unchecked_into();
-			let frame = EncodedFrame::from(frame);
-
-			if let Ok(metadata) = meta.dyn_into::<js_sys::Object>() {
-				// TODO handle metadata
-				if let Ok(config) = js_sys::Reflect::get(&metadata, &"decoderConfig".into()) {
-					let config: web_sys::VideoDecoderConfig = config.unchecked_into();
-					let config = VideoDecoderConfig::from(config);
-					config_tx.send_replace(Some(config));
-				}
-			}
-
-			if frames_tx.send(frame).is_err() {
-				closed_tx2.send_replace(Err(Error::Dropped)).ok();
-			}
-		}) as Box<dyn FnMut(_, _)>);
-
-		let init = web_sys::VideoEncoderInit::new(on_error.as_ref().unchecked_ref(), on_frame.as_ref().unchecked_ref());
-		let inner: web_sys::VideoEncoder = web_sys::VideoEncoder::new(&init).unwrap();
-		inner.configure(&(&self).into())?;
-
-		let decoder = VideoEncoder {
-			inner,
-			on_error,
-			on_frame,
-		};
-
-		let decoded = VideoEncoded {
-			frames: frames_rx,
-			closed: closed_rx,
-			config: config_rx,
-		};
+		let decoder = VideoEncoder::new(self, config_tx, frames_tx, closed_tx)?;
+		let decoded = VideoEncoded::new(config_rx, frames_rx, closed_rx);
 
 		Ok((decoder, decoded))
 	}
@@ -126,7 +99,7 @@ impl VideoEncoderConfig {
 
 impl From<&VideoEncoderConfig> for web_sys::VideoEncoderConfig {
 	fn from(this: &VideoEncoderConfig) -> Self {
-		let config = web_sys::VideoEncoderConfig::new(&this.codec, this.resolution.width, this.resolution.height);
+		let config = web_sys::VideoEncoderConfig::new(&this.codec, this.resolution.height, this.resolution.width);
 
 		if let Some(Dimensions { width, height }) = this.display {
 			config.set_display_height(height);
@@ -174,8 +147,19 @@ impl From<&VideoEncoderConfig> for web_sys::VideoEncoderConfig {
 	}
 }
 
+#[derive(Debug, Default)]
+pub struct VideoEncodeOptions {
+	// Force or deny a key frame.
+	pub key_frame: Option<bool>,
+	// TODO
+	// pub quantizer: Option<u8>,
+}
+
 pub struct VideoEncoder {
 	inner: web_sys::VideoEncoder,
+	config: VideoEncoderConfig,
+
+	last_keyframe: Rc<RefCell<Option<Timestamp>>>,
 
 	// These are held to avoid dropping them.
 	#[allow(dead_code)]
@@ -185,12 +169,94 @@ pub struct VideoEncoder {
 }
 
 impl VideoEncoder {
-	pub fn encode(&self, frame: VideoFrame) -> Result<(), Error> {
-		self.inner.encode(&frame)?;
+	fn new(
+		config: VideoEncoderConfig,
+		on_config: watch::Sender<Option<VideoDecoderConfig>>,
+		on_frame: mpsc::UnboundedSender<EncodedFrame>,
+		on_error: watch::Sender<Result<(), Error>>,
+	) -> Result<Self, Error> {
+		let last_keyframe = Rc::new(RefCell::new(None));
+		let last_keyframe2 = last_keyframe.clone();
+
+		let on_error2 = on_error.clone();
+		let on_error = Closure::wrap(Box::new(move |e: JsValue| {
+			on_error.send_replace(Err(Error::from(e))).ok();
+		}) as Box<dyn FnMut(_)>);
+
+		let on_frame = Closure::wrap(Box::new(move |frame: JsValue, meta: JsValue| {
+			// First parameter is the frame, second optional parameter is metadata.
+			let frame: web_sys::EncodedVideoChunk = frame.unchecked_into();
+			let frame = EncodedFrame::from(frame);
+
+			if let Ok(metadata) = meta.dyn_into::<js_sys::Object>() {
+				// TODO handle metadata
+				if let Ok(config) = js_sys::Reflect::get(&metadata, &"decoderConfig".into()) {
+					if !config.is_falsy() {
+						let config: web_sys::VideoDecoderConfig = config.unchecked_into();
+						let config = VideoDecoderConfig::from(config);
+						on_config.send_replace(Some(config));
+					}
+				}
+			}
+
+			if frame.keyframe {
+				let mut last_keyframe = last_keyframe2.borrow_mut();
+				if frame.timestamp > last_keyframe.unwrap_or_default() {
+					*last_keyframe = Some(frame.timestamp);
+				}
+			}
+
+			if on_frame.send(frame).is_err() {
+				on_error2.send_replace(Err(Error::Dropped)).ok();
+			}
+		}) as Box<dyn FnMut(_, _)>);
+
+		let init = web_sys::VideoEncoderInit::new(on_error.as_ref().unchecked_ref(), on_frame.as_ref().unchecked_ref());
+		let inner: web_sys::VideoEncoder = web_sys::VideoEncoder::new(&init).unwrap();
+		inner.configure(&(&config).into())?;
+
+		Ok(Self {
+			config,
+			inner,
+			last_keyframe,
+			on_error,
+			on_frame,
+		})
+	}
+
+	pub fn encode(&mut self, frame: &VideoFrame, options: VideoEncodeOptions) -> Result<(), Error> {
+		let o = web_sys::VideoEncoderEncodeOptions::new();
+
+		if let Some(key_frame) = options.key_frame {
+			o.set_key_frame(key_frame);
+		} else if let Some(max_gop_duration) = self.config.max_gop_duration {
+			let timestamp = frame.timestamp();
+			let mut last_keyframe = self.last_keyframe.borrow_mut();
+
+			let duration = timestamp - last_keyframe.unwrap_or_default();
+			if duration >= max_gop_duration {
+				o.set_key_frame(true);
+			}
+
+			*last_keyframe = Some(timestamp);
+		}
+
+		self.inner.encode_with_options(frame.inner(), &o)?;
+
+		frame.inner().close(); // TODO remove this since we take a reference
+
 		Ok(())
 	}
 
-	pub async fn flush(&self) -> Result<(), Error> {
+	pub fn queue_size(&self) -> u32 {
+		self.inner.encode_queue_size()
+	}
+
+	pub fn config(&self) -> &VideoEncoderConfig {
+		&self.config
+	}
+
+	pub async fn flush(&mut self) -> Result<(), Error> {
 		wasm_bindgen_futures::JsFuture::from(self.inner.flush()).await?;
 		Ok(())
 	}
@@ -203,13 +269,21 @@ impl Drop for VideoEncoder {
 }
 
 pub struct VideoEncoded {
+	config: watch::Receiver<Option<VideoDecoderConfig>>,
 	frames: mpsc::UnboundedReceiver<EncodedFrame>,
 	closed: watch::Receiver<Result<(), Error>>,
-	config: watch::Receiver<Option<VideoDecoderConfig>>,
 }
 
 impl VideoEncoded {
-	pub async fn next(&mut self) -> Result<Option<EncodedFrame>, Error> {
+	fn new(
+		config: watch::Receiver<Option<VideoDecoderConfig>>,
+		frames: mpsc::UnboundedReceiver<EncodedFrame>,
+		closed: watch::Receiver<Result<(), Error>>,
+	) -> Self {
+		Self { config, frames, closed }
+	}
+
+	pub async fn frame(&mut self) -> Result<Option<EncodedFrame>, Error> {
 		tokio::select! {
 			biased;
 			frame = self.frames.recv() => Ok(frame),
@@ -217,14 +291,12 @@ impl VideoEncoded {
 		}
 	}
 
-	pub async fn config(&self) -> Result<VideoDecoderConfig, Error> {
-		Ok(self
-			.config
+	pub async fn config(&self) -> Option<VideoDecoderConfig> {
+		self.config
 			.clone()
 			.wait_for(|config| config.is_some())
 			.await
-			.map_err(|_| Error::Dropped)?
+			.ok()?
 			.clone()
-			.unwrap())
 	}
 }

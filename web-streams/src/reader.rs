@@ -10,6 +10,10 @@ use crate::{Error, PromiseExt};
 /// A wrapper around ReadableStream
 pub struct Reader<T: JsCast> {
 	inner: ReadableStreamDefaultReader,
+
+	// Keep the most recent promise to make `read` cancelable
+	read: Option<js_sys::Promise>,
+
 	_phantom: PhantomData<T>,
 }
 
@@ -19,13 +23,19 @@ impl<T: JsCast> Reader<T> {
 		let inner = stream.get_reader().unchecked_into();
 		Ok(Self {
 			inner,
+			read: None,
 			_phantom: PhantomData,
 		})
 	}
 
 	/// Read the next element from the stream, returning None if the stream is done.
 	pub async fn read(&mut self) -> Result<Option<T>, Error> {
-		let result: ReadableStreamReadResult = JsFuture::from(self.inner.read()).await?.into();
+		if self.read.is_none() {
+			self.read = Some(self.inner.read());
+		}
+
+		let result: ReadableStreamReadResult = JsFuture::from(self.read.as_ref().unwrap().clone()).await?.into();
+		self.read.take(); // Clear the promise on success
 
 		if Reflect::get(&result, &"done".into())?.is_truthy() {
 			return Ok(None);

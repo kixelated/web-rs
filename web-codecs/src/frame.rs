@@ -1,9 +1,23 @@
+use std::fmt;
+
 use bytes::{Bytes, BytesMut};
+
+use crate::units::Timestamp;
 
 pub struct EncodedFrame {
 	pub payload: Bytes,
-	pub timestamp: f64,
+	pub timestamp: Timestamp,
 	pub keyframe: bool,
+}
+
+impl fmt::Debug for EncodedFrame {
+	fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+		f.debug_struct("EncodedFrame")
+			.field("payload", &self.payload.len())
+			.field("timestamp", &self.timestamp)
+			.field("keyframe", &self.keyframe)
+			.finish()
+	}
 }
 
 impl From<web_sys::EncodedVideoChunk> for EncodedFrame {
@@ -16,7 +30,7 @@ impl From<web_sys::EncodedVideoChunk> for EncodedFrame {
 
 		Self {
 			payload: payload.freeze(),
-			timestamp: chunk.timestamp(),
+			timestamp: Timestamp::from_micros(chunk.timestamp() as _),
 			keyframe: chunk.type_() == web_sys::EncodedVideoChunkType::Key,
 		}
 	}
@@ -32,7 +46,7 @@ impl From<web_sys::EncodedAudioChunk> for EncodedFrame {
 
 		Self {
 			payload: payload.freeze(),
-			timestamp: chunk.timestamp(),
+			timestamp: Timestamp::from_micros(chunk.timestamp() as _),
 			keyframe: chunk.type_() == web_sys::EncodedAudioChunkType::Key,
 		}
 	}

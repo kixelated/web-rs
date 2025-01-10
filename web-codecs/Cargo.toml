@@ -20,10 +20,16 @@ tokio = { version = "1", features = ["sync", "macros"] }
 bytes = "1"
 
 derive_more = { version = "1", features = [
+	"add",
+	"add_assign",
+	"mul",
+	"mul_assign",
+	"sum",
 	"from",
+	"display",
+	"debug",
 	"deref",
 	"deref_mut",
-	"display",
 ] }
 
 [dependencies.web-sys]
@@ -45,6 +51,7 @@ features = [
 	"VideoEncoder",
 	"VideoEncoderInit",
 	"VideoEncoderConfig",
+	"VideoEncoderEncodeOptions",
 	"LatencyMode",
 	"AlphaOption",
 	"EncodedAudioChunk",
