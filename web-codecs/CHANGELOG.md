@@ -6,6 +6,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.3.3](https://github.com/kixelated/web-rs/compare/web-codecs-v0.3.2...web-codecs-v0.3.3) - 2025-01-10
+
+### Other
+
+- Fix encoding and some bugs. ([#9](https://github.com/kixelated/web-rs/pull/9))
+- Tabs r cool ([#8](https://github.com/kixelated/web-rs/pull/8))
+- Try to fix cargo docs.
+- Merge in web-streams and basic encoder support ([#6](https://github.com/kixelated/web-rs/pull/6))
+
 ## [0.3.2](https://github.com/kixelated/web-codecs-rs/compare/v0.3.1...v0.3.2) - 2024-11-26
 
 ### Other
