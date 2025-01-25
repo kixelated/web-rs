@@ -1,13 +1,13 @@
-use derive_more::From;
+use std::time::Duration;
 
-use crate::{Duration, Timestamp};
+use derive_more::From;
 
 #[derive(Debug, From)]
 pub struct VideoFrame(web_sys::VideoFrame);
 
 impl VideoFrame {
-	pub fn timestamp(&self) -> Timestamp {
-		Timestamp::from_micros(self.0.timestamp().unwrap() as _)
+	pub fn timestamp(&self) -> Duration {
+		Duration::from_micros(self.0.timestamp().unwrap() as _)
 	}
 
 	pub fn duration(&self) -> Option<Duration> {

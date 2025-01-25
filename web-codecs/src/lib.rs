@@ -2,10 +2,10 @@
 mod audio;
 mod error;
 mod frame;
-mod units;
+mod timestamp;
 mod video;
 
 pub use error::*;
 pub use frame::*;
-pub use units::*;
+pub use timestamp::*;
 pub use video::*;

@@ -1,8 +1,6 @@
-use std::{fmt, ops};
+use std::{fmt, ops, time::Duration};
 
-use super::Duration;
-
-#[derive(Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Default)]
+#[derive(Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Default, From, Into)]
 pub struct Timestamp(Duration);
 
 impl Timestamp {
@@ -14,44 +12,44 @@ impl Timestamp {
 		Self(Duration::from_millis(millis))
 	}
 
-	pub fn from_seconds(seconds: u64) -> Self {
-		Self(Duration::from_seconds(seconds))
+	pub fn from_secs(seconds: u64) -> Self {
+		Self(Duration::from_secs(seconds))
 	}
 
 	pub fn from_minutes(minutes: u64) -> Self {
-		Self(Duration::from_minutes(minutes))
+		Self::from_secs(minutes * 60)
 	}
 
 	pub fn from_hours(hours: u64) -> Self {
-		Self(Duration::from_hours(hours))
+		Self::from_minutes(hours * 60)
 	}
 
 	pub fn from_units(value: u64, base: u64) -> Self {
-		Self(Duration::from_units(value, base))
+		Self::from_micros((value * 1_000_000) / base)
 	}
 
 	pub fn as_micros(self) -> u64 {
-		self.0.as_micros()
+		self.0.as_micros() as u64
 	}
 
 	pub fn as_millis(self) -> u64 {
-		self.0.as_millis()
+		self.0.as_millis() as u64
 	}
 
-	pub fn as_seconds(self) -> u64 {
-		self.0.as_seconds()
+	pub fn as_secs(self) -> u64 {
+		self.0.as_secs()
 	}
 
 	pub fn as_minutes(self) -> u64 {
-		self.0.as_minutes()
+		self.as_secs() / 60
 	}
 
 	pub fn as_hours(self) -> u64 {
-		self.0.as_hours()
+		self.as_minutes() / 60
 	}
 
 	pub fn as_units(self, base: u64) -> u64 {
-		self.0.as_units(base)
+		(self.as_micros() * base) / 1_000_000
 	}
 }
 
