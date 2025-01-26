@@ -6,6 +6,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.3.4](https://github.com/kixelated/web-rs/compare/web-codecs-v0.3.3...web-codecs-v0.3.4) - 2025-01-26
+
+### Other
+
+- Remove our custom Duration time. ([#10](https://github.com/kixelated/web-rs/pull/10))
+
 ## [0.3.3](https://github.com/kixelated/web-rs/compare/web-codecs-v0.3.2...web-codecs-v0.3.3) - 2025-01-10
 
 ### Other
