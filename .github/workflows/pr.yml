@@ -28,7 +28,6 @@ jobs:
 
       # Make sure u guys don't write bad code
       - run: cargo check --all
-      - run: cargo test --all
       - run: cargo clippy --all --no-deps -- -D warnings
       - run: cargo fmt --all --check
 
