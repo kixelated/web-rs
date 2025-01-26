@@ -3,7 +3,7 @@ use std::{cell::RefCell, rc::Rc, time::Duration};
 use tokio::sync::{mpsc, watch};
 use wasm_bindgen::prelude::*;
 
-use crate::{EncodedFrame, Error};
+use crate::{EncodedFrame, Error, Timestamp};
 
 use super::{Dimensions, VideoDecoderConfig, VideoFrame};
 
@@ -156,7 +156,7 @@ pub struct VideoEncoder {
 	inner: web_sys::VideoEncoder,
 	config: VideoEncoderConfig,
 
-	last_keyframe: Rc<RefCell<Option<Duration>>>,
+	last_keyframe: Rc<RefCell<Option<Timestamp>>>,
 
 	// These are held to avoid dropping them.
 	#[allow(dead_code)]
