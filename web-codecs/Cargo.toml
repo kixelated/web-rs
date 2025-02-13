@@ -19,7 +19,7 @@ js-sys = "0.3.70"
 tokio = { version = "1", features = ["sync", "macros"] }
 bytes = "1"
 
-derive_more = { version = "1", features = ["from", "display", "into"] }
+derive_more = { version = "1", features = ["from", "display"] }
 
 [dependencies.web-sys]
 version = "0.3.70"

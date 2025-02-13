@@ -2,10 +2,10 @@
 mod audio;
 mod error;
 mod frame;
-mod timestamp;
 mod video;
 
 pub use error::*;
 pub use frame::*;
-pub use timestamp::*;
 pub use video::*;
+
+pub type Timestamp = std::time::Duration;
