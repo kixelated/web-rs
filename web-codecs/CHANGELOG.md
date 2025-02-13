@@ -6,6 +6,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.3.5](https://github.com/kixelated/web-rs/compare/web-codecs-v0.3.4...web-codecs-v0.3.5) - 2025-02-13
+
+### Other
+
+- Remove the Timestamp wrapper. ([#12](https://github.com/kixelated/web-rs/pull/12))
+
 ## [0.3.4](https://github.com/kixelated/web-rs/compare/web-codecs-v0.3.3...web-codecs-v0.3.4) - 2025-01-26
 
 ### Other
