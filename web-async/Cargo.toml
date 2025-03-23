@@ -9,7 +9,7 @@ version = "0.1.0"
 edition = "2021"
 
 keywords = ["wasm", "async", "futures"]
-categories = ["wasm", "async", "futures"]
+categories = ["wasm"]
 
 [target.'cfg(target_arch = "wasm32")'.dependencies]
 wasm-bindgen-futures = "0.4"
