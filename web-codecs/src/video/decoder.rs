@@ -57,11 +57,11 @@ impl VideoDecoderConfig {
 	}
 
 	pub fn is_valid(&self) -> Result<(), Error> {
-		if self.resolution.map_or(true, |d| d.width == 0 || d.height == 0) {
+		if self.resolution.is_none_or(|d| d.width == 0 || d.height == 0) {
 			return Err(Error::InvalidDimensions);
 		}
 
-		if self.display.map_or(true, |d| d.width == 0 || d.height == 0) {
+		if self.display.is_none_or(|d| d.width == 0 || d.height == 0) {
 			return Err(Error::InvalidDimensions);
 		}
 
