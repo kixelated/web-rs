@@ -6,6 +6,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.3.6](https://github.com/kixelated/web-rs/compare/web-codecs-v0.3.5...web-codecs-v0.3.6) - 2025-03-23
+
+### Other
+
+- Move moq-async to web-async. ([#14](https://github.com/kixelated/web-rs/pull/14))
+
 ## [0.3.5](https://github.com/kixelated/web-rs/compare/web-codecs-v0.3.4...web-codecs-v0.3.5) - 2025-02-13
 
 ### Other
