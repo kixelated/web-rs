@@ -1,0 +1,18 @@
+[package]
+name = "web-async"
+description = "Async helpers and utilities for WASM"
+authors = ["Luke Curley"]
+repository = "https://github.com/kixelated/web-rs"
+license = "MIT OR Apache-2.0"
+
+version = "0.1.0"
+edition = "2021"
+
+keywords = ["wasm", "async", "futures"]
+categories = ["wasm", "async", "futures"]
+
+[target.'cfg(target_arch = "wasm32")'.dependencies]
+wasm-bindgen-futures = "0.4"
+
+[target.'cfg(not(target_arch = "wasm32"))'.dependencies]
+tokio = { version = "1", features = ["rt"] }
