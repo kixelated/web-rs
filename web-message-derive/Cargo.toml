@@ -1,0 +1,19 @@
+[package]
+name = "web-message-derive"
+version = "0.0.1"
+edition = "2024"
+
+description = "A macro that converts Rust structs to/from JavaScript objects via postMessage."
+authors = ["Luke Curley"]
+repository = "https://github.com/kixelated/web-rs"
+license = "MIT OR Apache-2.0"
+
+categories = ["wasm", "web-programming"]
+
+[lib]
+proc-macro = true
+
+[dependencies]
+proc-macro2 = "1"
+quote = "1"
+syn = { version = "2", features = ["full"] }
