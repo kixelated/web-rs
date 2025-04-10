@@ -16,7 +16,7 @@ pub fn derive_message(input: TokenStream) -> TokenStream {
 
 			expand_enum(ident, &tag_field, &data_enum.variants)
 		}
-		_ => panic!("Message only supports structs and enums"),
+		_ => panic!("Message only supports structs and enums (for now)"),
 	};
 
 	output.into()
@@ -45,24 +45,9 @@ fn expand_struct(ident: &syn::Ident, fields: &Fields) -> proc_macro2::TokenStrea
 		let name = f.ident.as_ref().unwrap();
 		let name_str = name.to_string();
 
-		let is_transferable = f.attrs.iter().any(|attr| {
-			attr.path().is_ident("msg")
-				&& attr
-					.parse_args::<syn::Ident>()
-					.map_or(false, |ident| ident == "transferable")
-		});
-
-		if is_transferable {
-			quote! {
-				#name: ::js_sys::Reflect::get(&obj, &#name_str.into()).map_err(|_| ::web_message::Error::MissingField(#name_str))?
-					.into()
-			}
-		} else {
-			quote! {
-				#name: ::js_sys::Reflect::get(&obj, &#name_str.into()).map_err(|_| ::web_message::Error::MissingField(#name_str))?
-					.try_into()
-					.map_err(|_| ::web_message::Error::InvalidField(#name_str, ::js_sys::Reflect::get(&obj, &#name_str.into()).unwrap()))?
-			}
+		quote! {
+			#name: ::web_message::Message::from_message(::web_sys::js_sys::Reflect::get(&obj, &#name_str.into()).map_err(|_| ::web_message::Error::MissingField(#name_str))?)
+				.map_err(|_| ::web_message::Error::InvalidField(#name_str))?
 		}
 	});
 
@@ -70,39 +55,24 @@ fn expand_struct(ident: &syn::Ident, fields: &Fields) -> proc_macro2::TokenStrea
 		let name = f.ident.as_ref().unwrap();
 		let name_str = name.to_string();
 
-		let is_transferable = f.attrs.iter().any(|attr| {
-			attr.path().is_ident("msg")
-				&& attr
-					.parse_args::<syn::Ident>()
-					.map_or(false, |ident| ident == "transferable")
-		});
-
-		if is_transferable {
-			quote! {
-				::js_sys::Reflect::set(&obj, &#name_str.into(), &self.#name.clone().into()).unwrap();
-				transferable.push(&self.#name.into());
-			}
-		} else {
-			quote! {
-				::js_sys::Reflect::set(&obj, &#name_str.into(), &self.#name.into()).unwrap();
-			}
+		quote! {
+			::web_sys::js_sys::Reflect::set(&obj, &#name_str.into(), &self.#name.into()).unwrap();
 		}
 	});
 
 	quote! {
-		impl #ident {
-			pub fn from_message(message: ::js_sys::wasm_bindgen::JsValue) -> Result<Self, ::web_message::Error> {
-				let obj = js_sys::Object::try_from(&message).ok_or(::web_message::Error::ExpectedObject(message.clone()))?;
+		impl ::web_message::Message for #ident {
+			fn from_message(message: ::web_sys::js_sys::wasm_bindgen::JsValue) -> Result<Self, ::web_message::Error> {
+				let obj = web_sys::js_sys::Object::try_from(&message).ok_or(::web_message::Error::ExpectedObject)?;
 				Ok(Self {
 					#(#field_inits),*
 				})
 			}
 
-			pub fn into_message(self) -> (::js_sys::Object, ::js_sys::Array) {
-				let obj = ::js_sys::Object::new();
-				let transferable = ::js_sys::Array::new();
+			fn into_message(self, _transferable: &mut ::web_sys::js_sys::Array) -> ::web_sys::js_sys::wasm_bindgen::JsValue {
+				let obj = ::web_sys::js_sys::Object::new();
 				#(#field_assignments)*
-				(obj, transferable)
+				obj.into()
 			}
 		}
 	}
@@ -123,24 +93,9 @@ fn expand_enum(
 					let name = f.ident.as_ref().unwrap();
 					let name_str = name.to_string();
 
-					let is_transferable = f.attrs.iter().any(|attr| {
-						attr.path().is_ident("post")
-							&& attr
-								.parse_args::<syn::Ident>()
-								.map_or(false, |ident| ident == "transferable")
-					});
-
-					if is_transferable {
-						quote! {
-							#name: ::js_sys::Reflect::get(&obj, &#name_str.into()).map_err(|_| ::web_message::Error::MissingField(#name_str))?
-								.into()
-						}
-					} else {
-						quote! {
-							#name: ::js_sys::Reflect::get(&obj, &#name_str.into()).map_err(|_| ::web_message::Error::MissingField(#name_str))?
-								.try_into()
-								.map_err(|_| ::web_message::Error::InvalidField(#name_str, ::js_sys::Reflect::get(&obj, &#name_str.into()).unwrap()))?
-						}
+					quote! {
+						#name: ::web_message::Message::from_message(::web_sys::js_sys::Reflect::get(&obj, &#name_str.into()).map_err(|_| ::web_message::Error::MissingField(#name_str))?)
+							.map_err(|_| ::web_message::Error::InvalidField(#name_str))?
 					}
 				});
 
@@ -175,28 +130,14 @@ fn expand_enum(
 					let name = f.ident.as_ref().unwrap();
 					let name_str = name.to_string();
 
-					let is_transferable = f.attrs.iter().any(|attr| {
-						attr.path().is_ident("post")
-							&& attr
-								.parse_args::<syn::Ident>()
-								.map_or(false, |ident| ident == "transferable")
-					});
-
-					if is_transferable {
-						quote! {
-							::js_sys::Reflect::set(&obj, &#name_str.into(), &#name.clone().into()).unwrap();
-							transferable.push(&#name.into());
-						}
-					} else {
-						quote! {
-							::js_sys::Reflect::set(&obj, &#name_str.into(), &#name.into()).unwrap();
-						}
+					quote! {
+						::web_sys::js_sys::Reflect::set(&obj, &#name_str.into(), &#name.into_message(_transferable)).unwrap();
 					}
 				});
 
 				quote! {
 					#enum_ident::#variant_ident { #(#field_names),* } => {
-						::js_sys::Reflect::set(&obj, &#tag_field.into(), &#variant_str.into()).unwrap();
+						::web_sys::js_sys::Reflect::set(&obj, &#tag_field.into(), &#variant_str.into()).unwrap();
 						#(#set_fields)*
 					}
 				}
@@ -204,7 +145,7 @@ fn expand_enum(
 			Fields::Unit => {
 				quote! {
 					#enum_ident::#variant_ident => {
-						::js_sys::Reflect::set(&obj, &#tag_field.into(), &#variant_str.into()).unwrap();
+						::web_sys::js_sys::Reflect::set(&obj, &#tag_field.into(), &#variant_str.into()).unwrap();
 					}
 				}
 			}
@@ -213,28 +154,25 @@ fn expand_enum(
 	});
 
 	quote! {
-		impl #enum_ident {
-			pub fn from_message(message: ::js_sys::wasm_bindgen::JsValue) -> Result<Self, ::web_message::Error> {
-				let obj = js_sys::Object::try_from(&message).ok_or(::web_message::Error::ExpectedObject(message.clone()))?;
-				let tag_val = ::js_sys::Reflect::get(&obj, &#tag_field.into()).map_err(|_| ::web_message::Error::MissingTag(#tag_field))?;
+		impl ::web_message::Message for #enum_ident {
+			fn from_message(message: ::web_sys::js_sys::wasm_bindgen::JsValue) -> Result<Self, ::web_message::Error> {
+				let obj = web_sys::js_sys::Object::try_from(&message).ok_or(::web_message::Error::ExpectedObject)?;
+				let tag_val = ::web_sys::js_sys::Reflect::get(&obj, &#tag_field.into()).map_err(|_| ::web_message::Error::MissingTag(#tag_field))?;
 				let tag_str = tag_val.as_string()
-					.ok_or(::web_message::Error::InvalidTag(#tag_field, tag_val.clone()))?;
+					.ok_or(::web_message::Error::InvalidTag(#tag_field))?;
 
 				match tag_str.as_str() {
 					#(#from_matches)*
-					_ => Err(::web_message::Error::UnknownTag(#tag_field, tag_val.clone())),
+					_ => Err(::web_message::Error::UnknownTag(#tag_field)),
 				}
 			}
 
-			pub fn into_message(self) -> (::js_sys::Object, ::js_sys::Array) {
-				let obj = ::js_sys::Object::new();
-				let transferable = ::js_sys::Array::new();
-
+			fn into_message(self, _transferable: &mut ::web_sys::js_sys::Array) -> ::web_sys::js_sys::wasm_bindgen::JsValue {
+				let obj = ::web_sys::js_sys::Object::new();
 				match self {
 					#(#into_matches),*
 				}
-
-				(obj, transferable)
+				obj.into()
 			}
 		}
 	}

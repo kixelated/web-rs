@@ -1,20 +1,23 @@
 #[derive(thiserror::Error, Debug)]
 pub enum Error {
-	#[error("missing '{0}' field")]
+	#[error("missing '{0}' tag")]
 	MissingTag(&'static str),
 
-	#[error("invalid '{0}' field: {1:?}")]
-	InvalidTag(&'static str, ::js_sys::wasm_bindgen::JsValue),
+	#[error("invalid '{0}' tag")]
+	InvalidTag(&'static str),
 
-	#[error("unknown tag: {0} ({1:?})")]
-	UnknownTag(&'static str, ::js_sys::wasm_bindgen::JsValue),
+	#[error("unknown tag: {0}")]
+	UnknownTag(&'static str),
 
 	#[error("missing '{0}' field")]
 	MissingField(&'static str),
 
-	#[error("invalid '{0}' field: {1:?}")]
-	InvalidField(&'static str, ::js_sys::wasm_bindgen::JsValue),
+	#[error("invalid '{0}' field")]
+	InvalidField(&'static str),
 
-	#[error("expected object: {0:?}")]
-	ExpectedObject(::js_sys::wasm_bindgen::JsValue),
+	#[error("expected object")]
+	ExpectedObject,
+
+	#[error("invalid type: {0}")]
+	InvalidType(&'static str),
 }
