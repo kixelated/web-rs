@@ -14,17 +14,17 @@ pub struct AudioDecoderConfig {
 	pub description: Option<Bytes>,
 
 	/// The number of channels in the audio.
-	pub channels: u32,
+	pub channel_count: u32,
 
 	/// The sample rate of the audio.
 	pub sample_rate: u32,
 }
 
 impl AudioDecoderConfig {
-	pub fn new<T: Into<String>>(codec: T, channels: u32, sample_rate: u32) -> Self {
+	pub fn new<T: Into<String>>(codec: T, channel_count: u32, sample_rate: u32) -> Self {
 		Self {
 			codec: codec.into(),
-			channels,
+			channel_count,
 			sample_rate,
 			..Default::default()
 		}
@@ -83,7 +83,7 @@ impl AudioDecoderConfig {
 
 impl From<&AudioDecoderConfig> for web_sys::AudioDecoderConfig {
 	fn from(this: &AudioDecoderConfig) -> Self {
-		let config = web_sys::AudioDecoderConfig::new(&this.codec, this.channels, this.sample_rate);
+		let config = web_sys::AudioDecoderConfig::new(&this.codec, this.channel_count, this.sample_rate);
 
 		if let Some(description) = &this.description {
 			config.set_description(&js_sys::Uint8Array::from(description.as_ref()));
@@ -113,7 +113,7 @@ impl From<web_sys::AudioDecoderConfig> for AudioDecoderConfig {
 		Self {
 			codec: this.get_codec(),
 			description,
-			channels,
+			channel_count: channels,
 			sample_rate,
 		}
 	}

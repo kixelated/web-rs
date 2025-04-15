@@ -1,3 +1,5 @@
+use std::{cell::RefCell, rc::Rc};
+
 use tokio::sync::{mpsc, watch};
 use wasm_bindgen::prelude::*;
 
@@ -5,21 +7,22 @@ use crate::{EncodedFrame, Error};
 
 use super::{AudioData, AudioDecoderConfig};
 
+// TODO support the full specification: https://developer.mozilla.org/en-US/docs/Web/API/AudioEncoder/configure
 #[derive(Debug, Default, Clone)]
 pub struct AudioEncoderConfig {
 	pub codec: String,
-	pub channels: Option<u32>,
+	pub channel_count: Option<u32>,
 	pub sample_rate: Option<u32>,
-	pub bit_rate: Option<f64>, // bits per second
+	pub bitrate: Option<u32>, // bits per second
 }
 
 impl AudioEncoderConfig {
 	pub fn new<T: Into<String>>(codec: T) -> Self {
 		Self {
 			codec: codec.into(),
-			channels: None,
+			channel_count: None,
 			sample_rate: None,
-			bit_rate: None,
+			bitrate: None,
 		}
 	}
 
@@ -38,10 +41,10 @@ impl AudioEncoderConfig {
 	pub fn init(self) -> Result<(AudioEncoder, AudioEncoded), Error> {
 		let (frames_tx, frames_rx) = mpsc::unbounded_channel();
 		let (closed_tx, closed_rx) = watch::channel(Ok(()));
-		let (config_tx, config_rx) = watch::channel(None);
+		let config = Rc::new(RefCell::new(None));
 
-		let decoder = AudioEncoder::new(self, config_tx, frames_tx, closed_tx)?;
-		let decoded = AudioEncoded::new(config_rx, frames_rx, closed_rx);
+		let decoder = AudioEncoder::new(self, config.clone(), frames_tx, closed_tx)?;
+		let decoded = AudioEncoded::new(config, frames_rx, closed_rx);
 
 		Ok((decoder, decoded))
 	}
@@ -51,7 +54,7 @@ impl From<&AudioEncoderConfig> for web_sys::AudioEncoderConfig {
 	fn from(this: &AudioEncoderConfig) -> Self {
 		let config = web_sys::AudioEncoderConfig::new(&this.codec);
 
-		if let Some(channels) = this.channels {
+		if let Some(channels) = this.channel_count {
 			config.set_number_of_channels(channels);
 		}
 
@@ -59,8 +62,8 @@ impl From<&AudioEncoderConfig> for web_sys::AudioEncoderConfig {
 			config.set_sample_rate(sample_rate);
 		}
 
-		if let Some(bit_rate) = this.bit_rate {
-			config.set_bitrate(bit_rate);
+		if let Some(bit_rate) = this.bitrate {
+			config.set_bitrate(bit_rate as f64);
 		}
 
 		config
@@ -81,7 +84,7 @@ pub struct AudioEncoder {
 impl AudioEncoder {
 	fn new(
 		config: AudioEncoderConfig,
-		on_config: watch::Sender<Option<AudioDecoderConfig>>,
+		on_config: Rc<RefCell<Option<AudioDecoderConfig>>>,
 		on_frame: mpsc::UnboundedSender<EncodedFrame>,
 		on_error: watch::Sender<Result<(), Error>>,
 	) -> Result<Self, Error> {
@@ -101,7 +104,7 @@ impl AudioEncoder {
 					if !config.is_falsy() {
 						let config: web_sys::AudioDecoderConfig = config.unchecked_into();
 						let config = AudioDecoderConfig::from(config);
-						on_config.send_replace(Some(config));
+						on_config.borrow_mut().replace(config);
 					}
 				}
 			}
@@ -149,14 +152,14 @@ impl Drop for AudioEncoder {
 }
 
 pub struct AudioEncoded {
-	config: watch::Receiver<Option<AudioDecoderConfig>>,
+	config: Rc<RefCell<Option<AudioDecoderConfig>>>,
 	frames: mpsc::UnboundedReceiver<EncodedFrame>,
 	closed: watch::Receiver<Result<(), Error>>,
 }
 
 impl AudioEncoded {
 	fn new(
-		config: watch::Receiver<Option<AudioDecoderConfig>>,
+		config: Rc<RefCell<Option<AudioDecoderConfig>>>,
 		frames: mpsc::UnboundedReceiver<EncodedFrame>,
 		closed: watch::Receiver<Result<(), Error>>,
 	) -> Self {
@@ -171,12 +174,7 @@ impl AudioEncoded {
 		}
 	}
 
-	pub async fn config(&self) -> Option<AudioDecoderConfig> {
-		self.config
-			.clone()
-			.wait_for(|config| config.is_some())
-			.await
-			.ok()?
-			.clone()
+	pub fn config(&self) -> Option<AudioDecoderConfig> {
+		self.config.borrow().clone()
 	}
 }

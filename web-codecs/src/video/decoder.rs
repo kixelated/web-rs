@@ -45,6 +45,14 @@ impl VideoDecoderConfig {
 	/// Check if the configuration is supported by this browser.
 	/// Returns an error if the configuration is invalid, and false if just unsupported.
 	pub async fn is_supported(&self) -> Result<bool, Error> {
+		if self.resolution.is_none_or(|d| d.width == 0 || d.height == 0) {
+			return Err(Error::InvalidDimensions);
+		}
+
+		if self.display.is_none_or(|d| d.width == 0 || d.height == 0) {
+			return Err(Error::InvalidDimensions);
+		}
+
 		let res =
 			wasm_bindgen_futures::JsFuture::from(web_sys::VideoDecoder::is_config_supported(&self.into())).await?;
 
@@ -54,18 +62,6 @@ impl VideoDecoderConfig {
 			.unwrap();
 
 		Ok(supported)
-	}
-
-	pub fn is_valid(&self) -> Result<(), Error> {
-		if self.resolution.is_none_or(|d| d.width == 0 || d.height == 0) {
-			return Err(Error::InvalidDimensions);
-		}
-
-		if self.display.is_none_or(|d| d.width == 0 || d.height == 0) {
-			return Err(Error::InvalidDimensions);
-		}
-
-		Ok(())
 	}
 
 	pub fn build(self) -> Result<(VideoDecoder, VideoDecoded), Error> {

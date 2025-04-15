@@ -20,15 +20,15 @@ impl AudioData {
 		self.0.format()
 	}
 
-	pub fn sample_rate(&self) -> f32 {
-		self.0.sample_rate()
+	pub fn sample_rate(&self) -> u32 {
+		self.0.sample_rate() as u32
 	}
 
-	pub fn number_of_frames(&self) -> u32 {
+	pub fn frame_count(&self) -> u32 {
 		self.0.number_of_frames()
 	}
 
-	pub fn number_of_channels(&self) -> u32 {
+	pub fn channel_count(&self) -> u32 {
 		self.0.number_of_channels()
 	}
 
