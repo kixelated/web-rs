@@ -6,20 +6,11 @@ pub enum Error {
 	#[error("invalid '{0}' field")]
 	InvalidField(&'static str),
 
-	#[error("expected object with a single (string) key")]
-	ExpectedUnitObject,
+	#[error("unexpected type")]
+	UnexpectedType,
 
-	#[error("expected null")]
-	ExpectedNull,
-
-	#[error("invalid type: {0}")]
-	InvalidType(&'static str),
-
-	#[error("expected string")]
-	ExpectedString,
-
-	#[error("unknown tag: {0}")]
-	UnknownTag(String),
+	#[error("unknown tag")]
+	UnknownTag,
 
 	#[cfg(feature = "url")]
 	#[error("invalid URL: {0}")]

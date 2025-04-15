@@ -22,7 +22,7 @@ macro_rules! upstream {
 				}
 
 				fn from_message(message: JsValue) -> Result<Self, Error> {
-					Self::try_from(message).map_err(|_| Error::InvalidType(stringify!($t)))
+					Self::try_from(message).map_err(|_| Error::UnexpectedType)
 				}
 			}
 		)*
@@ -41,7 +41,7 @@ macro_rules! integer {
 				}
 
 				fn from_message(message: JsValue) -> Result<Self, Error> {
-					Ok(message.as_f64().ok_or(Error::InvalidType(stringify!($t)))? as $t)
+					Ok(message.as_f64().ok_or(Error::UnexpectedType)? as $t)
 				}
 			}
 		)*
@@ -57,7 +57,7 @@ impl Message for bool {
 	}
 
 	fn from_message(message: JsValue) -> Result<Self, Error> {
-		message.as_bool().ok_or(Error::InvalidType("bool"))
+		message.as_bool().ok_or(Error::UnexpectedType)
 	}
 }
 
@@ -88,7 +88,7 @@ impl<T: Message> Message for Vec<T> {
 
 	fn from_message(message: JsValue) -> Result<Self, Error> {
 		if !message.is_array() {
-			return Err(Error::InvalidType("Vec"));
+			return Err(Error::UnexpectedType);
 		}
 
 		let array = Array::from(&message);
@@ -109,7 +109,7 @@ impl Message for js_sys::ArrayBuffer {
 	fn from_message(message: JsValue) -> Result<Self, Error> {
 		message
 			.dyn_into::<js_sys::ArrayBuffer>()
-			.map_err(|_| Error::InvalidType("ArrayBuffer"))
+			.map_err(|_| Error::UnexpectedType)
 	}
 }
 
@@ -126,7 +126,7 @@ macro_rules! transferable_feature {
 				fn from_message(message: JsValue) -> Result<Self, Error> {
 					message
 						.dyn_into::<web_sys::$t>()
-						.map_err(|_| Error::InvalidType(stringify!($t)))
+						.map_err(|_| Error::UnexpectedType)
 				}
 			}
 		)*
@@ -158,7 +158,7 @@ impl Message for url::Url {
 	}
 
 	fn from_message(message: JsValue) -> Result<Self, Error> {
-		let str = message.as_string().ok_or(Error::ExpectedString)?;
+		let str = message.as_string().ok_or(Error::UnexpectedType)?;
 		url::Url::parse(&str).map_err(Error::InvalidUrl)
 	}
 }
