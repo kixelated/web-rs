@@ -146,3 +146,15 @@ transferable_feature!(
 	//"MediaSourceHandle" = MediaSourceHandle,
 	"MidiAccess" = MidiAccess,
 );
+
+#[cfg(feature = "url")]
+impl Message for url::Url {
+	fn into_message(self, _transferable: &mut Array) -> JsValue {
+		self.to_string().into()
+	}
+
+	fn from_message(message: JsValue) -> Result<Self, Error> {
+		let str = message.as_string().ok_or(Error::ExpectedString)?;
+		url::Url::parse(&str).map_err(Error::InvalidUrl)
+	}
+}
