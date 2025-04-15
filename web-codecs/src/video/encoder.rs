@@ -10,7 +10,7 @@ use super::{Dimensions, VideoDecoderConfig, VideoFrame};
 use derive_more::Display;
 
 #[derive(Debug, Display, Clone, Copy)]
-pub enum EncoderBitrateMode {
+pub enum VideoEncoderBitrate {
 	#[display("constant")]
 	Constant,
 
@@ -32,7 +32,7 @@ pub struct VideoEncoderConfig {
 	pub frame_rate: Option<f64>,       // frames per second
 	pub alpha_preserved: Option<bool>, // keep alpha channel
 	pub scalability_mode: Option<String>,
-	pub bitrate_mode: Option<EncoderBitrateMode>,
+	pub bitrate_mode: Option<VideoEncoderBitrate>,
 
 	// NOTE: This is a custom configuration
 	/// The maximum duration of a Group of Pictures (GOP) before forcing a new keyframe.
@@ -239,8 +239,6 @@ impl VideoEncoder {
 		}
 
 		self.inner.encode_with_options(frame.inner(), &o)?;
-
-		frame.inner().close(); // TODO remove this since we take a reference
 
 		Ok(())
 	}
