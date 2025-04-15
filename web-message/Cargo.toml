@@ -1,0 +1,40 @@
+[package]
+name = "web-message"
+version = "0.0.1"
+edition = "2024"
+description = "A macro that converts Rust structs to/from JavaScript objects via postMessage."
+authors = ["Luke Curley"]
+repository = "https://github.com/kixelated/web-rs"
+license = "MIT OR Apache-2.0"
+
+categories = ["wasm", "web-programming"]
+
+[features]
+default = ["derive"]
+derive = ["dep:web-message-derive"]
+
+# These features implement the Message interface for popular crates:
+url = ["dep:url"]
+
+# These feature names copy web_sys for all (currently) transferable types.
+# https://developer.mozilla.org/en-US/docs/Web/API/Web_Workers_API/Transferable_objects
+MessagePort = ["web-sys/MessagePort"]
+ReadableStream = ["web-sys/ReadableStream"]
+WritableStream = ["web-sys/WritableStream"]
+TransformStream = ["web-sys/TransformStream"]
+WebTransportReceiveStream = ["web-sys/WebTransportReceiveStream"]
+WebTransportSendStream = ["web-sys/WebTransportSendStream"]
+AudioData = ["web-sys/AudioData"]
+ImageBitmap = ["web-sys/ImageBitmap"]
+VideoFrame = ["web-sys/VideoFrame"]
+OffscreenCanvas = ["web-sys/OffscreenCanvas"]
+RtcDataChannel = ["web-sys/RtcDataChannel"]
+# MediaSourceHandle = ["web-sys/MediaSourceHandle"]
+MidiAccess = ["web-sys/MidiAccess"]
+
+[dependencies]
+web-message-derive = { path = "../web-message-derive", version = "0.0.1", optional = true }
+web-sys = "0.3"
+thiserror = "2"
+
+url = { version = "2", optional = true }
