@@ -22,7 +22,7 @@ mod test {
 
 		let mut transferable = Array::new();
 		let obj = command.clone().into_message(&mut transferable);
-		let out = Command::from_message(obj.into()).unwrap();
+		let out = Command::from_message(obj).unwrap();
 
 		assert_eq!(command, out);
 		assert_eq!(transferable.length(), 1);

@@ -57,7 +57,7 @@ impl Message for bool {
 	}
 
 	fn from_message(message: JsValue) -> Result<Self, Error> {
-		Ok(message.as_bool().ok_or(Error::InvalidType("bool"))?)
+		message.as_bool().ok_or(Error::InvalidType("bool"))
 	}
 }
 
@@ -87,7 +87,11 @@ impl<T: Message> Message for Vec<T> {
 	}
 
 	fn from_message(message: JsValue) -> Result<Self, Error> {
-		let array = Array::try_from(message).map_err(|_| Error::InvalidType("Vec"))?;
+		if !message.is_array() {
+			return Err(Error::InvalidType("Vec"));
+		}
+
+		let array = Array::from(&message);
 		let mut values = Vec::with_capacity(array.length() as usize);
 		for i in 0..array.length() {
 			values.push(T::from_message(array.get(i))?);
