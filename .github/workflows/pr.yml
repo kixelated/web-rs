@@ -14,6 +14,9 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
+      # Install Just to run CI scripts
+      - uses: extractions/setup-just@v3
+
       # Install Rust with clippy/rustfmt
       - uses: actions-rust-lang/setup-rust-toolchain@v1
         with:
@@ -23,13 +26,7 @@ jobs:
       # Set RUSTFLAGS
       - run: echo "RUSTFLAGS=--cfg=web_sys_unstable_apis" >> $GITHUB_ENV
 
-      # Cache rust compilation for speed
-      - uses: Swatinem/rust-cache@v2
-
       # Make sure u guys don't write bad code
-      - run: cargo check --all
-      - run: cargo clippy --all --no-deps -- -D warnings
-      - run: cargo fmt --all --check
-
-      # Check for unused dependencies
-      - uses: bnjbvr/cargo-machete@main
+      - run: just setup
+      - run: just check
+      - run: just test
