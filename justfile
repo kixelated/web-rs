@@ -11,20 +11,13 @@ default:
 
 # Install any required dependencies.
 setup:
-	# Make sure the WASM target is installed.
-	rustup target add wasm32-unknown-unknown
+	# Install cargo-binstall for faster tool installation.
+	cargo install cargo-binstall
+	just setup-tools
 
-	# Make sure the right components are installed.
-	rustup component add rustfmt clippy
-
-	# Install cargo shear
-	cargo install cargo-shear
-
-	# Install cargo sort
-	cargo install cargo-sort
-
-	# Install cargo-upgrades and cargo-edit
-	cargo install cargo-upgrades cargo-edit
+# A separate entrypoint for CI.
+setup-tools:
+	cargo binstall -y cargo-shear cargo-sort cargo-upgrades cargo-edit cargo-audit
 
 # Run the CI checks
 check:
@@ -37,6 +30,9 @@ check:
 
 	# requires: cargo install cargo-sort
 	cargo sort --workspace --check
+
+	# requires: cargo install cargo-audit
+	cargo audit
 
 # Run any CI tests
 test:

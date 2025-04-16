@@ -27,9 +27,6 @@ jobs:
       # Set RUSTFLAGS
       - run: echo "RUSTFLAGS=--cfg=web_sys_unstable_apis" >> $GITHUB_ENV
 
-      # Cache rust compilation for speed
-      - uses: Swatinem/rust-cache@v2
-
       # Run release-plz to create PRs and releases
       - name: Run release-plz
         uses: MarcoIeni/release-plz-action@v0.5
