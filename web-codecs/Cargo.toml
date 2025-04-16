@@ -12,10 +12,8 @@ categories = ["wasm", "multimedia", "web-programming", "api-bindings"]
 
 [dependencies]
 bytes = "1"
-
 derive_more = { version = "1", features = ["from", "display"] }
-js-sys = "0.3.70"
-
+js-sys = "0.3.77"
 thiserror = "1"
 tokio = { version = "1", features = ["sync", "macros"] }
 wasm-bindgen = "0.2"
@@ -26,7 +24,7 @@ rustdoc-args = ["--cfg", "web_sys_unstable_apis"]
 rustc-args = ["--cfg", "web_sys_unstable_apis"]
 
 [dependencies.web-sys]
-version = "0.3.70"
+version = "0.3.77"
 features = [
 	"VideoDecoder",
 	"VideoDecoderInit",
@@ -50,4 +48,12 @@ features = [
 	"EncodedAudioChunk",
 	"EncodedAudioChunkInit",
 	"EncodedAudioChunkType",
+	"AudioData",
+	"AudioDecoder",
+	"AudioDecoderInit",
+	"AudioDecoderConfig",
+	"AudioEncoder",
+	"AudioEncoderInit",
+	"AudioEncoderConfig",
+	"AudioSampleFormat",
 ]

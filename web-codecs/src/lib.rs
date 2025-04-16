@@ -4,6 +4,7 @@ mod error;
 mod frame;
 mod video;
 
+pub use audio::*;
 pub use error::*;
 pub use frame::*;
 pub use video::*;

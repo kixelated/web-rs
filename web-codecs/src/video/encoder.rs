@@ -10,7 +10,7 @@ use super::{Dimensions, VideoDecoderConfig, VideoFrame};
 use derive_more::Display;
 
 #[derive(Debug, Display, Clone, Copy)]
-pub enum EncoderBitrateMode {
+pub enum VideoBitrateMode {
 	#[display("constant")]
 	Constant,
 
@@ -28,11 +28,11 @@ pub struct VideoEncoderConfig {
 	pub display: Option<Dimensions>,
 	pub hardware_acceleration: Option<bool>,
 	pub latency_optimized: Option<bool>,
-	pub bit_rate: Option<f64>,         // bits per second
-	pub frame_rate: Option<f64>,       // frames per second
+	pub bitrate: Option<u32>,          // bits per second
+	pub framerate: Option<f64>,        // frames per second
 	pub alpha_preserved: Option<bool>, // keep alpha channel
 	pub scalability_mode: Option<String>,
-	pub bitrate_mode: Option<EncoderBitrateMode>,
+	pub bitrate_mode: Option<VideoBitrateMode>,
 
 	// NOTE: This is a custom configuration
 	/// The maximum duration of a Group of Pictures (GOP) before forcing a new keyframe.
@@ -47,8 +47,8 @@ impl VideoEncoderConfig {
 			display: None,
 			hardware_acceleration: None,
 			latency_optimized: None,
-			bit_rate: None,
-			frame_rate: None,
+			bitrate: None,
+			framerate: None,
 			alpha_preserved: None,
 			scalability_mode: None,
 			bitrate_mode: None,
@@ -85,10 +85,10 @@ impl VideoEncoderConfig {
 	pub fn init(self) -> Result<(VideoEncoder, VideoEncoded), Error> {
 		let (frames_tx, frames_rx) = mpsc::unbounded_channel();
 		let (closed_tx, closed_rx) = watch::channel(Ok(()));
-		let (config_tx, config_rx) = watch::channel(None);
+		let config = Rc::new(RefCell::new(None));
 
-		let decoder = VideoEncoder::new(self, config_tx, frames_tx, closed_tx)?;
-		let decoded = VideoEncoded::new(config_rx, frames_rx, closed_rx);
+		let decoder = VideoEncoder::new(self, config.clone(), frames_tx, closed_tx)?;
+		let decoded = VideoEncoded::new(config, frames_rx, closed_rx);
 
 		Ok((decoder, decoded))
 	}
@@ -117,11 +117,11 @@ impl From<&VideoEncoderConfig> for web_sys::VideoEncoderConfig {
 			});
 		}
 
-		if let Some(value) = this.bit_rate {
-			config.set_bitrate(value);
+		if let Some(value) = this.bitrate {
+			config.set_bitrate(value as f64);
 		}
 
-		if let Some(value) = this.frame_rate {
+		if let Some(value) = this.framerate {
 			config.set_framerate(value);
 		}
 
@@ -168,7 +168,7 @@ pub struct VideoEncoder {
 impl VideoEncoder {
 	fn new(
 		config: VideoEncoderConfig,
-		on_config: watch::Sender<Option<VideoDecoderConfig>>,
+		on_config: Rc<RefCell<Option<VideoDecoderConfig>>>,
 		on_frame: mpsc::UnboundedSender<EncodedFrame>,
 		on_error: watch::Sender<Result<(), Error>>,
 	) -> Result<Self, Error> {
@@ -191,7 +191,7 @@ impl VideoEncoder {
 					if !config.is_falsy() {
 						let config: web_sys::VideoDecoderConfig = config.unchecked_into();
 						let config = VideoDecoderConfig::from(config);
-						on_config.send_replace(Some(config));
+						on_config.borrow_mut().replace(config);
 					}
 				}
 			}
@@ -240,8 +240,6 @@ impl VideoEncoder {
 
 		self.inner.encode_with_options(frame.inner(), &o)?;
 
-		frame.inner().close(); // TODO remove this since we take a reference
-
 		Ok(())
 	}
 
@@ -266,14 +264,14 @@ impl Drop for VideoEncoder {
 }
 
 pub struct VideoEncoded {
-	config: watch::Receiver<Option<VideoDecoderConfig>>,
+	config: Rc<RefCell<Option<VideoDecoderConfig>>>,
 	frames: mpsc::UnboundedReceiver<EncodedFrame>,
 	closed: watch::Receiver<Result<(), Error>>,
 }
 
 impl VideoEncoded {
 	fn new(
-		config: watch::Receiver<Option<VideoDecoderConfig>>,
+		config: Rc<RefCell<Option<VideoDecoderConfig>>>,
 		frames: mpsc::UnboundedReceiver<EncodedFrame>,
 		closed: watch::Receiver<Result<(), Error>>,
 	) -> Self {
@@ -288,12 +286,8 @@ impl VideoEncoded {
 		}
 	}
 
-	pub async fn config(&self) -> Option<VideoDecoderConfig> {
-		self.config
-			.clone()
-			.wait_for(|config| config.is_some())
-			.await
-			.ok()?
-			.clone()
+	/// Returns the decoder config, after the first frame has been encoded.
+	pub fn config(&self) -> Option<VideoDecoderConfig> {
+		self.config.borrow().clone()
 	}
 }
