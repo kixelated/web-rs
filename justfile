@@ -43,6 +43,9 @@ fix:
 	cargo fix --allow-staged --all-targets --all-features
 	cargo clippy --fix --allow-staged --all-targets --all-features
 
+	# Update any patch versions
+	cargo update
+
 	# requires: cargo install cargo-shear
 	cargo shear --fix
 
@@ -54,6 +57,9 @@ fix:
 # Upgrade any tooling
 upgrade:
 	rustup upgrade
+
+	# Update any patch versions
+	cargo update
 
 	# Requires: cargo install cargo-upgrades cargo-edit
 	cargo upgrade
