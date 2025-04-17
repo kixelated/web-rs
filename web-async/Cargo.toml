@@ -11,6 +11,12 @@ edition = "2021"
 keywords = ["wasm", "async", "futures"]
 categories = ["wasm"]
 
+[dependencies]
+tracing = { version = "0.1", optional = true }
+
+[features]
+tracing = ["dep:tracing"]
+
 [target.'cfg(target_arch = "wasm32")'.dependencies]
 wasm-bindgen-futures = "0.4"
 
