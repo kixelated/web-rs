@@ -6,6 +6,9 @@ pub enum Error {
 	#[error("invalid '{0}' field")]
 	InvalidField(&'static str),
 
+	#[error("unexpected length")]
+	UnexpectedLength,
+
 	#[error("unexpected type")]
 	UnexpectedType,
 

@@ -75,11 +75,12 @@ fn expand_enum(
 				});
 
 				Some(quote! {
-					#variant_str => {
+					#variant_str if val.is_object() => {
 						Ok(#enum_ident::#variant_ident {
 							#(#field_assignments),*
 						})
 					}
+					#variant_str => Err(::web_message::Error::UnexpectedType),
 				})
 			}
 
@@ -89,10 +90,30 @@ fn expand_enum(
 				Some(quote! {
 					#variant_str => Ok(#enum_ident::#variant_ident(::web_message::Message::from_message(val)?)),
 				})
-			}
+			},
 
-			Fields::Unnamed(_) => {
-				unimplemented!("web-message does not support multi-element tuple variants (yet?)");
+			Fields::Unnamed(fields_unnamed) => {
+				let fields_count = fields_unnamed.unnamed.len() as u32;
+				let field_assignments = (0..fields_count).map(|i| {
+					quote! {
+						::web_message::Message::from_message(arr.get(#i))
+							.map_err(|_| ::web_message::Error::InvalidField(stringify!(#i)))?
+					}
+				});
+
+				Some(quote! {
+					#variant_str if val.is_array() => {
+						let arr = ::web_sys::js_sys::Array::from(&val);
+						if arr.length() != #fields_count {
+							return Err(::web_message::Error::UnexpectedLength);
+						}
+
+						Ok(#enum_ident::#variant_ident (
+							#(#field_assignments),*
+						))
+					}
+					#variant_str => Err(::web_message::Error::UnexpectedType),
+				})
 			}
 		}
 	});
@@ -151,7 +172,28 @@ fn expand_enum(
 					}
 				}
 			}
-			Fields::Unnamed(_) => unimplemented!("web-message does not support tuple variants (yet)"),
+			Fields::Unnamed(fields_unnamed) => {
+				let fields_count = fields_unnamed.unnamed.len();
+				let field_idents: Vec<_> = (0..fields_count)
+					.map(|i| syn::Ident::new(&format!("field_{}", i), proc_macro2::Span::call_site()))
+					.collect();
+
+				let set_fields = field_idents.iter().map(|f| {
+					quote! {
+						inner.push(&#f.into_message(_transferable));
+					}
+				});
+
+				quote! {
+					#enum_ident::#variant_ident(#(#field_idents),*) => {
+						let obj = ::web_sys::js_sys::Object::new();
+						let inner = ::web_sys::js_sys::Array::new();
+						#(#set_fields)*
+						::web_sys::js_sys::Reflect::set(&obj, &#variant_str.into(), &inner.into()).unwrap();
+						obj.into()
+					}
+				}
+			}
 		}
 	});
 

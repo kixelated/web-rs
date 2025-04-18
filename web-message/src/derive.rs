@@ -9,10 +9,18 @@ mod test {
 	#[test]
 	fn enum_msg() {
 		#[derive(Message, Clone, Debug, PartialEq, Eq)]
+		struct Config {
+			width: u32,
+			height: u32,
+		}
+
+		#[derive(Message, Clone, Debug, PartialEq, Eq)]
 		enum Command {
 			Connect { url: String },
 			Frame { name: Option<String>, payload: ArrayBuffer },
+			Config(Config),
 			Close,
+			Dimensions(u32, u64),
 		}
 
 		let command = Command::Frame {
@@ -49,33 +57,5 @@ mod test {
 
 		assert_eq!(event, out);
 		assert_eq!(transferable, [event.payload].iter().collect());
-	}
-
-	#[test]
-	fn enum_variant() {
-		#[derive(Message, Clone, Debug, PartialEq, Eq)]
-		struct Config {
-			width: u32,
-			height: u32,
-		}
-
-		#[derive(Message, Clone, Debug, PartialEq, Eq)]
-		enum Command {
-			Connect { url: String },
-			Config(Config),
-			Close,
-		}
-
-		let command = Command::Config(Config {
-			width: 100,
-			height: 100,
-		});
-
-		let mut transferable = Array::new();
-		let obj = command.clone().into_message(&mut transferable);
-		let out = Command::from_message(obj).unwrap();
-
-		assert_eq!(command, out);
-		assert_eq!(transferable.length(), 1);
 	}
 }
