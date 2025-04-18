@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.2](https://github.com/kixelated/web-rs/compare/web-streams-v0.1.1...web-streams-v0.1.2) - 2025-04-18
+
+### Other
+
+- Add Just ([#18](https://github.com/kixelated/web-rs/pull/18))
+
 ## [0.1.1](https://github.com/kixelated/web-rs/compare/web-streams-v0.1.0...web-streams-v0.1.1) - 2025-01-10
 
 ### Other
