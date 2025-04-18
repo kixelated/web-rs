@@ -1,6 +1,6 @@
 [package]
 name = "web-message"
-version = "0.0.1"
+version = "0.0.2"
 edition = "2024"
 description = "A macro that converts Rust structs to/from JavaScript objects via postMessage."
 authors = ["Luke Curley"]
@@ -36,5 +36,5 @@ MidiAccess = ["web-sys/MidiAccess"]
 thiserror = "2"
 
 url = { version = "2", optional = true }
-web-message-derive = { path = "../web-message-derive", version = "0.0.1", optional = true }
+web-message-derive = { path = "../web-message-derive", version = "0.0.2", optional = true }
 web-sys = "0.3"
