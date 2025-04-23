@@ -15,7 +15,7 @@ pub enum Error {
 	#[error("unknown tag")]
 	UnknownTag,
 
-	#[cfg(feature = "url")]
+	#[cfg(feature = "Url")]
 	#[error("invalid URL: {0}")]
 	InvalidUrl(url::ParseError),
 }

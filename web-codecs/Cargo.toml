@@ -12,6 +12,7 @@ categories = ["wasm", "multimedia", "web-programming", "api-bindings"]
 rust-version = "1.85"
 
 [dependencies]
+bytemuck = "1.22"
 bytes = "1"
 derive_more = { version = "2", features = ["from", "display"] }
 js-sys = "0.3.77"
@@ -57,4 +58,7 @@ features = [
 	"AudioEncoderInit",
 	"AudioEncoderConfig",
 	"AudioSampleFormat",
+	"AudioDataCopyToOptions",
+	"AudioDataInit",
+	"console",
 ]

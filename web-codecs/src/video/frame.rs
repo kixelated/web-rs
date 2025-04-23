@@ -1,4 +1,7 @@
-use std::time::Duration;
+use std::{
+	ops::{Deref, DerefMut},
+	time::Duration,
+};
 
 use derive_more::From;
 
@@ -15,25 +18,32 @@ impl VideoFrame {
 	pub fn duration(&self) -> Option<Duration> {
 		Some(Duration::from_micros(self.0.duration()? as _))
 	}
+}
 
-	pub fn display_width(&self) -> u32 {
-		self.0.display_width()
+// Avoid closing the video frame on transfer by cloning it.
+impl From<VideoFrame> for web_sys::VideoFrame {
+	fn from(this: VideoFrame) -> Self {
+		this.0.clone().expect("detached")
 	}
+}
 
-	pub fn display_height(&self) -> u32 {
-		self.0.display_height()
+impl Clone for VideoFrame {
+	fn clone(&self) -> Self {
+		Self(self.0.clone().expect("detached"))
 	}
+}
 
-	pub fn coded_width(&self) -> u32 {
-		self.0.coded_width()
-	}
+impl Deref for VideoFrame {
+	type Target = web_sys::VideoFrame;
 
-	pub fn coded_height(&self) -> u32 {
-		self.0.coded_height()
-	}
-
-	pub fn inner(&self) -> &web_sys::VideoFrame {
+	fn deref(&self) -> &Self::Target {
 		&self.0
+	}
+}
+
+impl DerefMut for VideoFrame {
+	fn deref_mut(&mut self) -> &mut Self::Target {
+		&mut self.0
 	}
 }
 

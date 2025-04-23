@@ -14,7 +14,7 @@ default = ["derive"]
 derive = ["dep:web-message-derive"]
 
 # These features implement the Message interface for popular crates:
-url = ["dep:url"]
+Url = ["dep:url"]
 
 # These feature names copy web_sys for all (currently) transferable types.
 # https://developer.mozilla.org/en-US/docs/Web/API/Web_Workers_API/Transferable_objects

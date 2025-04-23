@@ -238,7 +238,7 @@ impl VideoEncoder {
 			*last_keyframe = Some(timestamp);
 		}
 
-		self.inner.encode_with_options(frame.inner(), &o)?;
+		self.inner.encode_with_options(frame, &o)?;
 
 		Ok(())
 	}

@@ -113,6 +113,40 @@ impl Message for js_sys::ArrayBuffer {
 	}
 }
 
+macro_rules! typed_array {
+	($($t:ident),*,) => {
+		$(
+			impl Message for js_sys::$t {
+				fn into_message(self, transferable: &mut Array) -> JsValue {
+					transferable.push(&self.buffer());
+					self.into()
+				}
+
+				fn from_message(message: JsValue) -> Result<Self, Error> {
+					message
+						.dyn_into::<js_sys::$t>()
+						.map_err(|_| Error::UnexpectedType)
+				}
+			}
+		)*
+	};
+}
+
+// These are all the types that wrap an ArrayBuffer and can be transferred.
+typed_array!(
+	Float32Array,
+	Float64Array,
+	Int8Array,
+	Int16Array,
+	Int32Array,
+	Uint8Array,
+	Uint8ClampedArray,
+	Uint16Array,
+	Uint32Array,
+	BigInt64Array,
+	BigUint64Array,
+);
+
 macro_rules! transferable_feature {
 	($($feature:literal = $t:ident),* $(,)?) => {
 		$(
@@ -151,7 +185,7 @@ transferable_feature!(
 	"MidiAccess" = MidiAccess,
 );
 
-#[cfg(feature = "url")]
+#[cfg(feature = "Url")]
 impl Message for url::Url {
 	fn into_message(self, _transferable: &mut Array) -> JsValue {
 		self.to_string().into()

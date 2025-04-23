@@ -127,7 +127,7 @@ impl AudioEncoder {
 	}
 
 	pub fn encode(&mut self, frame: &AudioData) -> Result<(), Error> {
-		self.inner.encode(frame.inner())?;
+		self.inner.encode(frame)?;
 		Ok(())
 	}
 

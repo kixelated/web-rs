@@ -8,6 +8,9 @@ pub enum Error {
 	#[error("invalid dimensions")]
 	InvalidDimensions,
 
+	#[error("no channels")]
+	NoChannels,
+
 	#[error("unknown error: {0:?}")]
 	Unknown(JsValue),
 }
