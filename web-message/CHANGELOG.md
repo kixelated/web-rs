@@ -7,16 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-## [0.1.2](https://github.com/kixelated/web-rs/compare/web-streams-v0.1.1...web-streams-v0.1.2) - 2025-05-09
+## [0.0.2](https://github.com/kixelated/web-rs/compare/web-message-v0.0.1...web-message-v0.0.2) - 2025-05-09
 
 ### Other
 
 - Add a bunch of stuff ([#24](https://github.com/kixelated/web-rs/pull/24))
+- Add support for unnamed tuples. ([#23](https://github.com/kixelated/web-rs/pull/23))
 - Add Just ([#18](https://github.com/kixelated/web-rs/pull/18))
-
-## [0.1.1](https://github.com/kixelated/web-rs/compare/web-streams-v0.1.0...web-streams-v0.1.1) - 2025-01-10
-
-### Other
-
-- Fix encoding and some bugs. ([#9](https://github.com/kixelated/web-rs/pull/9))
-- Tabs r cool ([#8](https://github.com/kixelated/web-rs/pull/8))
+- Make unit enums strings, not null objects. ([#21](https://github.com/kixelated/web-rs/pull/21))
+- Add the web-message crate ([#17](https://github.com/kixelated/web-rs/pull/17))
