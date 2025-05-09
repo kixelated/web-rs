@@ -14,7 +14,7 @@ impl AudioData {
 	/// A helper to construct AudioData in a more type-safe way.
 	/// This currently only supports F32.
 	pub fn new<'a>(
-		channels: impl Iterator<Item = &'a [f32]> + ExactSizeIterator,
+		channels: impl ExactSizeIterator<Item = &'a [f32]>,
 		sample_rate: u32,
 		timestamp: Timestamp,
 	) -> Result<Self> {
