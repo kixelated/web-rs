@@ -6,6 +6,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.3.6](https://github.com/kixelated/web-rs/compare/web-codecs-v0.3.5...web-codecs-v0.3.6) - 2025-05-09
+
+### Other
+
+- Add a bunch of stuff ([#24](https://github.com/kixelated/web-rs/pull/24))
+- Add Just ([#18](https://github.com/kixelated/web-rs/pull/18))
+- Make a few nits for the WebCodecs API. ([#20](https://github.com/kixelated/web-rs/pull/20))
+- Initial audio support. ([#19](https://github.com/kixelated/web-rs/pull/19))
+- Move moq-async to web-async. ([#14](https://github.com/kixelated/web-rs/pull/14))
+
 ## [0.3.5](https://github.com/kixelated/web-rs/compare/web-codecs-v0.3.4...web-codecs-v0.3.5) - 2025-02-13
 
 ### Other
