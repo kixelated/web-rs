@@ -28,6 +28,11 @@ impl Writer {
 		let str = JsValue::from_str(reason);
 		self.inner.abort_with_reason(&str).ignore();
 	}
+
+	pub async fn closed(&self) -> Result<(), Error> {
+		JsFuture::from(self.inner.closed()).await?;
+		Ok(())
+	}
 }
 
 impl Drop for Writer {

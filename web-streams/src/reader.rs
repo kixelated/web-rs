@@ -51,6 +51,11 @@ impl<T: JsCast> Reader<T> {
 		let str = JsValue::from_str(reason);
 		self.inner.cancel_with_reason(&str).ignore();
 	}
+
+	pub async fn closed(&self) -> Result<(), Error> {
+		JsFuture::from(self.inner.closed()).await?;
+		Ok(())
+	}
 }
 
 impl<T: JsCast> Drop for Reader<T> {
