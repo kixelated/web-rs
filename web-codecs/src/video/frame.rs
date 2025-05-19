@@ -7,6 +7,8 @@ use derive_more::From;
 
 use crate::Timestamp;
 
+use super::Dimensions;
+
 #[derive(Debug, From)]
 pub struct VideoFrame(web_sys::VideoFrame);
 
@@ -17,6 +19,13 @@ impl VideoFrame {
 
 	pub fn duration(&self) -> Option<Duration> {
 		Some(Duration::from_micros(self.0.duration()? as _))
+	}
+
+	pub fn dimensions(&self) -> Dimensions {
+		Dimensions {
+			width: self.0.coded_width(),
+			height: self.0.coded_height(),
+		}
 	}
 }
 
