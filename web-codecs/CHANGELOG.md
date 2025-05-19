@@ -6,6 +6,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.3.7](https://github.com/kixelated/web-rs/compare/web-codecs-v0.3.6...web-codecs-v0.3.7) - 2025-05-19
+
+### Other
+
+- And add dimensions to VideoFrame. ([#28](https://github.com/kixelated/web-rs/pull/28))
+- Add PartialEq/Eq to Dimensions ([#26](https://github.com/kixelated/web-rs/pull/26))
+
 ## [0.3.6](https://github.com/kixelated/web-rs/compare/web-codecs-v0.3.5...web-codecs-v0.3.6) - 2025-05-09
 
 ### Other
