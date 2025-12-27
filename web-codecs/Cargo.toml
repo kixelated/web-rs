@@ -11,6 +11,10 @@ edition = "2021"
 categories = ["wasm", "multimedia", "web-programming", "api-bindings"]
 rust-version = "1.85"
 
+[package.metadata.docs.rs]
+rustdoc-args = ["--cfg", "web_sys_unstable_apis"]
+rustc-args = ["--cfg", "web_sys_unstable_apis"]
+
 [dependencies]
 bytemuck = "1.22"
 bytes = "1"
@@ -21,44 +25,40 @@ tokio = { version = "1", features = ["sync", "macros"] }
 wasm-bindgen = "0.2"
 wasm-bindgen-futures = "0.4"
 
-[package.metadata.docs.rs]
-rustdoc-args = ["--cfg", "web_sys_unstable_apis"]
-rustc-args = ["--cfg", "web_sys_unstable_apis"]
-
 [dependencies.web-sys]
 version = "0.3.77"
 features = [
-	"VideoDecoder",
-	"VideoDecoderInit",
-	"VideoDecoderConfig",
-	"VideoFrame",
-	"VideoColorSpace",
-	"VideoColorSpaceInit",
-	"EncodedVideoChunk",
-	"EncodedVideoChunkInit",
-	"EncodedVideoChunkType",
-	"HardwareAcceleration",
-	"VideoMatrixCoefficients",
-	"VideoColorPrimaries",
-	"VideoTransferCharacteristics",
-	"VideoEncoder",
-	"VideoEncoderInit",
-	"VideoEncoderConfig",
-	"VideoEncoderEncodeOptions",
-	"LatencyMode",
-	"AlphaOption",
-	"EncodedAudioChunk",
-	"EncodedAudioChunkInit",
-	"EncodedAudioChunkType",
-	"AudioData",
-	"AudioDecoder",
-	"AudioDecoderInit",
-	"AudioDecoderConfig",
-	"AudioEncoder",
-	"AudioEncoderInit",
-	"AudioEncoderConfig",
-	"AudioSampleFormat",
-	"AudioDataCopyToOptions",
-	"AudioDataInit",
-	"console",
+    "VideoDecoder",
+    "VideoDecoderInit",
+    "VideoDecoderConfig",
+    "VideoFrame",
+    "VideoColorSpace",
+    "VideoColorSpaceInit",
+    "EncodedVideoChunk",
+    "EncodedVideoChunkInit",
+    "EncodedVideoChunkType",
+    "HardwareAcceleration",
+    "VideoMatrixCoefficients",
+    "VideoColorPrimaries",
+    "VideoTransferCharacteristics",
+    "VideoEncoder",
+    "VideoEncoderInit",
+    "VideoEncoderConfig",
+    "VideoEncoderEncodeOptions",
+    "LatencyMode",
+    "AlphaOption",
+    "EncodedAudioChunk",
+    "EncodedAudioChunkInit",
+    "EncodedAudioChunkType",
+    "AudioData",
+    "AudioDecoder",
+    "AudioDecoderInit",
+    "AudioDecoderConfig",
+    "AudioEncoder",
+    "AudioEncoderInit",
+    "AudioEncoderConfig",
+    "AudioSampleFormat",
+    "AudioDataCopyToOptions",
+    "AudioDataInit",
+    "console",
 ]

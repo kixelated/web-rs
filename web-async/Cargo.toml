@@ -11,15 +11,15 @@ edition = "2021"
 keywords = ["wasm", "async", "futures"]
 categories = ["wasm"]
 
-[dependencies]
-tracing = { version = "0.1", optional = true }
-
 [features]
 tracing = ["dep:tracing"]
 
-[target.'cfg(target_arch = "wasm32")'.dependencies]
-wasm-bindgen-futures = "0.4"
+[dependencies]
+tracing = { version = "0.1", optional = true }
 
 [target.'cfg(not(target_arch = "wasm32"))'.dependencies]
-tokio = { version = "1", features = ["rt"] }
 parking_lot = "0.12"
+tokio = { version = "1", features = ["rt"] }
+
+[target.'cfg(target_arch = "wasm32")'.dependencies]
+wasm-bindgen-futures = "0.4"
