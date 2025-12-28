@@ -13,28 +13,10 @@ pub fn spawn<F: Future<Output = ()> + Send + 'static>(f: F) {
 	tokio::task::spawn(f);
 }
 
-#[cfg(any(not(target_arch = "wasm32"), target_os = "wasi"))]
-#[track_caller]
-pub fn spawn_named<F: Future<Output = ()> + Send + 'static>(name: &str, f: F) {
-	#[cfg(feature = "tracing")]
-	let f = tracing::Instrument::in_current_span(f);
-	tokio::task::Builder::new().name(name).spawn(f).ok();
-}
-
 #[cfg(all(target_arch = "wasm32", not(target_os = "wasi")))]
 #[track_caller]
 pub fn spawn<F: Future<Output = ()> + 'static>(f: F) {
 	#[cfg(feature = "tracing")]
 	let f = tracing::Instrument::in_current_span(f);
-	wasm_bindgen_futures::spawn_local(f);
-}
-
-#[cfg(all(target_arch = "wasm32", not(target_os = "wasi")))]
-#[track_caller]
-pub fn spawn_named<F: Future<Output = ()> + 'static>(name: &str, f: F) {
-	// WASM doesn't support task names, just spawn normally
-	#[cfg(feature = "tracing")]
-	let f = tracing::Instrument::in_current_span(f);
-	let _ = name; // Suppress unused warning
 	wasm_bindgen_futures::spawn_local(f);
 }

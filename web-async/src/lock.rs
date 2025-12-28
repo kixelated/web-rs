@@ -54,6 +54,12 @@ impl<T> Clone for Lock<T> {
 	}
 }
 
+impl<T: fmt::Debug> fmt::Debug for Lock<T> {
+	fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+		self.inner.fmt(f)
+	}
+}
+
 pub struct LockGuard<'a, T> {
 	#[cfg(any(not(target_arch = "wasm32"), target_os = "wasi"))]
 	inner: parking_lot::MutexGuard<'a, T>,
