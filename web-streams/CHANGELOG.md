@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.3](https://github.com/kixelated/web-rs/compare/web-streams-v0.1.2...web-streams-v0.1.3) - 2026-02-18
+
+### Other
+
+- Switch to parking_lot and add a `spawn_named` method. ([#30](https://github.com/kixelated/web-rs/pull/30))
+
 ## [0.1.2](https://github.com/kixelated/web-rs/compare/web-streams-v0.1.1...web-streams-v0.1.2) - 2025-05-09
 
 ### Other
