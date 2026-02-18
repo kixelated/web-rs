@@ -6,6 +6,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.3.8](https://github.com/kixelated/web-rs/compare/web-codecs-v0.3.7...web-codecs-v0.3.8) - 2026-02-18
+
+### Other
+
+- Switch to parking_lot and add a `spawn_named` method. ([#30](https://github.com/kixelated/web-rs/pull/30))
+
 ## [0.3.7](https://github.com/kixelated/web-rs/compare/web-codecs-v0.3.6...web-codecs-v0.3.7) - 2025-05-19
 
 ### Other
