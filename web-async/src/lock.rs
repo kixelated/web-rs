@@ -19,6 +19,10 @@ impl<T> Lock<T> {
 			inner: std::sync::Arc::new(parking_lot::Mutex::new(value)),
 		}
 	}
+
+	pub fn is_clone(&self, other: &Self) -> bool {
+		std::sync::Arc::ptr_eq(&self.inner, &other.inner)
+	}
 }
 
 impl<T> Lock<T> {
@@ -37,6 +41,10 @@ impl<T> Lock<T> {
 		Self {
 			inner: std::rc::Rc::new(std::cell::RefCell::new(value)),
 		}
+	}
+
+	pub fn is_clone(&self, other: &Self) -> bool {
+		std::rc::Rc::ptr_eq(&self.inner, &other.inner)
 	}
 }
 
