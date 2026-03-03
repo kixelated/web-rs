@@ -1,7 +1,7 @@
 use std::{cell::RefCell, rc::Rc};
 
 use tokio::sync::{mpsc, watch};
-use wasm_bindgen::prelude::*;
+use wasm_bindgen::{prelude::*, JsCast};
 
 use crate::{EncodedFrame, Error};
 
@@ -29,13 +29,8 @@ impl AudioEncoderConfig {
 	pub async fn is_supported(&self) -> Result<bool, Error> {
 		let res =
 			wasm_bindgen_futures::JsFuture::from(web_sys::AudioEncoder::is_config_supported(&self.into())).await?;
-
-		let supported = js_sys::Reflect::get(&res, &JsValue::from_str("supported"))
-			.unwrap()
-			.as_bool()
-			.unwrap();
-
-		Ok(supported)
+		let support: web_sys::AudioEncoderSupport = res.unchecked_into();
+		Ok(support.get_supported().unwrap_or(false))
 	}
 
 	pub fn init(self) -> Result<(AudioEncoder, AudioEncoded), Error> {
@@ -52,18 +47,14 @@ impl AudioEncoderConfig {
 
 impl From<&AudioEncoderConfig> for web_sys::AudioEncoderConfig {
 	fn from(this: &AudioEncoderConfig) -> Self {
-		let config = web_sys::AudioEncoderConfig::new(&this.codec);
-
-		if let Some(channels) = this.channel_count {
-			config.set_number_of_channels(channels);
-		}
-
-		if let Some(sample_rate) = this.sample_rate {
-			config.set_sample_rate(sample_rate);
-		}
+		let config = web_sys::AudioEncoderConfig::new(
+			&this.codec,
+			this.channel_count.unwrap_or(1),
+			this.sample_rate.unwrap_or(48000),
+		);
 
 		if let Some(bit_rate) = this.bitrate {
-			config.set_bitrate(bit_rate as f64);
+			config.set_bitrate(bit_rate);
 		}
 
 		config

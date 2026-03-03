@@ -1,6 +1,6 @@
 use bytes::{Bytes, BytesMut};
 use tokio::sync::{mpsc, watch};
-use wasm_bindgen::prelude::*;
+use wasm_bindgen::{prelude::*, JsCast};
 
 use super::{Dimensions, VideoColorSpaceConfig, VideoFrame};
 use crate::{EncodedFrame, Error};
@@ -55,13 +55,8 @@ impl VideoDecoderConfig {
 
 		let res =
 			wasm_bindgen_futures::JsFuture::from(web_sys::VideoDecoder::is_config_supported(&self.into())).await?;
-
-		let supported = js_sys::Reflect::get(&res, &JsValue::from_str("supported"))
-			.unwrap()
-			.as_bool()
-			.unwrap();
-
-		Ok(supported)
+		let support: web_sys::VideoDecoderSupport = res.unchecked_into();
+		Ok(support.get_supported().unwrap_or(false))
 	}
 
 	pub fn build(self) -> Result<(VideoDecoder, VideoDecoded), Error> {
