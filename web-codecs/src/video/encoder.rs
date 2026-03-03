@@ -1,7 +1,7 @@
 use std::{cell::RefCell, rc::Rc, time::Duration};
 
 use tokio::sync::{mpsc, watch};
-use wasm_bindgen::prelude::*;
+use wasm_bindgen::{prelude::*, JsCast};
 
 use crate::{EncodedFrame, Error, Timestamp};
 
@@ -59,13 +59,8 @@ impl VideoEncoderConfig {
 	pub async fn is_supported(&self) -> Result<bool, Error> {
 		let res =
 			wasm_bindgen_futures::JsFuture::from(web_sys::VideoEncoder::is_config_supported(&self.into())).await?;
-
-		let supported = js_sys::Reflect::get(&res, &JsValue::from_str("supported"))
-			.unwrap()
-			.as_bool()
-			.unwrap();
-
-		Ok(supported)
+		let support: web_sys::VideoEncoderSupport = res.unchecked_into();
+		Ok(support.get_supported().unwrap_or(false))
 	}
 
 	pub fn is_valid(&self) -> Result<(), Error> {
@@ -118,7 +113,7 @@ impl From<&VideoEncoderConfig> for web_sys::VideoEncoderConfig {
 		}
 
 		if let Some(value) = this.bitrate {
-			config.set_bitrate(value as f64);
+			config.set_bitrate(value);
 		}
 
 		if let Some(value) = this.framerate {
