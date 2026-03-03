@@ -17,22 +17,22 @@ impl VideoColorSpaceConfig {
 	}
 
 	pub fn full_range(self, enabled: bool) -> Self {
-		self.inner.set_full_range(enabled);
+		self.inner.set_full_range(Some(enabled));
 		self
 	}
 
 	pub fn matrix(self, matrix: VideoMatrixCoefficients) -> Self {
-		self.inner.set_matrix(matrix);
+		self.inner.set_matrix(Some(matrix));
 		self
 	}
 
 	pub fn primaries(self, primaries: VideoColorPrimaries) -> Self {
-		self.inner.set_primaries(primaries);
+		self.inner.set_primaries(Some(primaries));
 		self
 	}
 
 	pub fn transfer(self, transfer: VideoTransferCharacteristics) -> Self {
-		self.inner.set_transfer(transfer);
+		self.inner.set_transfer(Some(transfer));
 		self
 	}
 }
