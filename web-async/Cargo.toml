@@ -18,7 +18,6 @@ tracing = ["dep:tracing"]
 tracing = { version = "0.1", optional = true }
 
 [target.'cfg(not(target_arch = "wasm32"))'.dependencies]
-parking_lot = "0.12"
 tokio = { version = "1", features = ["rt"] }
 
 [target.'cfg(target_arch = "wasm32")'.dependencies]
