@@ -6,6 +6,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.3.9](https://github.com/kixelated/web-rs/compare/web-codecs-v0.3.8...web-codecs-v0.3.9) - 2026-03-03
+
+### Other
+
+- Update web-codecs for web-sys 0.3.91 breaking changes ([#36](https://github.com/kixelated/web-rs/pull/36))
+
 ## [0.3.8](https://github.com/kixelated/web-rs/compare/web-codecs-v0.3.7...web-codecs-v0.3.8) - 2026-02-18
 
 ### Other
