@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.3](https://github.com/kixelated/web-rs/compare/web-async-v0.1.2...web-async-v0.1.3) - 2026-03-03
+
+### Other
+
+- Revert web-async to std::sync::Mutex ([#35](https://github.com/kixelated/web-rs/pull/35))
+
 ## [0.1.2](https://github.com/kixelated/web-rs/compare/web-async-v0.1.1...web-async-v0.1.2) - 2026-02-18
 
 ### Other
