@@ -6,6 +6,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.3.10](https://github.com/kixelated/web-rs/compare/web-codecs-v0.3.9...web-codecs-v0.3.10) - 2026-06-09
+
+### Fixed
+
+- *(web-codecs)* VideoFrame::timestamp returns f64 in web-sys 0.3.100 ([#39](https://github.com/kixelated/web-rs/pull/39))
+
 ## [0.3.9](https://github.com/kixelated/web-rs/compare/web-codecs-v0.3.8...web-codecs-v0.3.9) - 2026-03-03
 
 ### Other
