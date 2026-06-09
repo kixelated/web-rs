@@ -14,7 +14,7 @@ pub struct VideoFrame(web_sys::VideoFrame);
 
 impl VideoFrame {
 	pub fn timestamp(&self) -> Timestamp {
-		Timestamp::from_micros(self.0.timestamp().unwrap() as _)
+		Timestamp::from_micros(self.0.timestamp() as _)
 	}
 
 	pub fn duration(&self) -> Option<Duration> {
