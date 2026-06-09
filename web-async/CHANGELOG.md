@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.4](https://github.com/kixelated/web-rs/compare/web-async-v0.1.3...web-async-v0.1.4) - 2026-06-09
+
+### Added
+
+- *(web-async)* add portable time module ([#38](https://github.com/kixelated/web-rs/pull/38))
+
 ## [0.1.3](https://github.com/kixelated/web-rs/compare/web-async-v0.1.2...web-async-v0.1.3) - 2026-03-03
 
 ### Other
