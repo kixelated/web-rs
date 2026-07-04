@@ -15,18 +15,22 @@
 
 pub use std::time::Duration;
 
+#[cfg(any(not(target_arch = "wasm32"), target_os = "wasi"))]
+pub use std::time::{SystemTime, SystemTimeError, UNIX_EPOCH};
+
 // wasi has a real clock and tokio support, so it goes with native (matching the
 // cfg split in `spawn`).
 #[cfg(any(not(target_arch = "wasm32"), target_os = "wasi"))]
 pub use tokio::time::{
-	interval, interval_at, sleep, sleep_until, timeout, timeout_at, Instant, Interval, MissedTickBehavior, Sleep,
-	Timeout,
+	error::Elapsed, interval, interval_at, sleep, sleep_until, timeout, timeout_at, Instant, Interval,
+	MissedTickBehavior, Sleep, Timeout,
 };
 
 #[cfg(all(target_arch = "wasm32", not(target_os = "wasi")))]
 pub use wasmtimer::{
-	std::Instant,
+	std::{Instant, SystemTime, SystemTimeError, UNIX_EPOCH},
 	tokio::{
-		interval, interval_at, sleep, sleep_until, timeout, timeout_at, Interval, MissedTickBehavior, Sleep, Timeout,
+		error::Elapsed, interval, interval_at, sleep, sleep_until, timeout, timeout_at, Interval, MissedTickBehavior,
+		Sleep, Timeout,
 	},
 };

@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Re-export `SystemTime` from `web_async::time` and add `MaybeSend`/`MaybeSync` future helpers.
+
 ## [0.1.4](https://github.com/kixelated/web-rs/compare/web-async-v0.1.3...web-async-v0.1.4) - 2026-06-09
 
 ### Added
