@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.5](https://github.com/kixelated/web-rs/compare/web-async-v0.1.4...web-async-v0.1.5) - 2026-07-04
+
+### Other
+
+- export wasm time helpers ([#41](https://github.com/kixelated/web-rs/pull/41))
+
 ### Added
 
 - Re-export `SystemTime` from `web_async::time` and add `MaybeSend`/`MaybeSync` future helpers.
