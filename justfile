@@ -17,7 +17,7 @@ setup:
 
 # A separate entrypoint for CI.
 setup-tools:
-	cargo binstall -y cargo-shear cargo-sort cargo-upgrades cargo-edit
+	cargo binstall -y --force cargo-shear cargo-sort cargo-upgrades cargo-edit
 
 # Run the CI checks
 check:
