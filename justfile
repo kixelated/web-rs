@@ -15,11 +15,11 @@ setup:
 	cargo install cargo-binstall
 	just setup-tools
 
-# A separate entrypoint for CI.
+# Install the cargo tools these recipes use.
 setup-tools:
 	cargo binstall -y --force cargo-shear cargo-sort cargo-upgrades cargo-edit
 
-# Run the CI checks
+# Run the checks.
 check:
 	cargo check --all-targets --all-features
 	cargo clippy --all-targets --all-features -- -D warnings
@@ -31,7 +31,7 @@ check:
 	# requires: cargo install cargo-sort
 	cargo sort --workspace --check
 
-# Run any CI tests
+# Run the tests.
 test:
 	cargo test
 

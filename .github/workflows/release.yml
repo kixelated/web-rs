@@ -25,7 +25,7 @@ jobs:
           target: wasm32-unknown-unknown
 
       # Set RUSTFLAGS
-      - run: echo "RUSTFLAGS=--cfg=web_sys_unstable_apis" >> $GITHUB_ENV
+      - run: echo "RUSTFLAGS=--cfg=web_sys_unstable_apis" >> "$GITHUB_ENV"
 
       # Run release-plz to create PRs and releases
       - name: Run release-plz
