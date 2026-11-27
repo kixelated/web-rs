@@ -13,10 +13,6 @@ default:
 setup:
 	# Install cargo-binstall for faster tool installation.
 	cargo install cargo-binstall
-	just setup-tools
-
-# Install the cargo tools these recipes use.
-setup-tools:
 	cargo binstall -y --force cargo-shear cargo-sort cargo-upgrades cargo-edit
 
 # Run the checks.

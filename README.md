@@ -1,6 +1,8 @@
 # web-rs
 Rust bindings to make WASM more tolerable.
 
+Nothing runs on pull requests: run `just check` before every push (`just setup` installs the tools it needs).
+
 ## Unstable API
 Some crates use unstable `web_sys` APIs and you may need to set `--cfg=web_sys_unstable_apis` when compiling.
 For more information, see the [web-sys docs](https://rustwasm.github.io/wasm-bindgen/web-sys/unstable-apis.html).
