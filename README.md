@@ -1,13 +1,15 @@
 # web-rs
 Rust bindings to make WASM more tolerable.
 
+Nothing runs on pull requests: run `just check` before every push (`just setup` installs the tools it needs).
+
 ## Unstable API
 Some crates use unstable `web_sys` APIs and you may need to set `--cfg=web_sys_unstable_apis` when compiling.
 For more information, see the [web-sys docs](https://rustwasm.github.io/wasm-bindgen/web-sys/unstable-apis.html).
 
 There's a few ways to set this depending on the environment:
-- [Cargo Config](./cargo/config.toml) via `rustflags`
-- [Github Action](.github/workflows/pr.yml) via `GITHUB_ENV`
+- [Cargo Config](./.cargo/config.toml) via `rustflags`
+- [GitHub Action](.github/workflows/release.yml) via `GITHUB_ENV`
 - [docs.rs](./web-codecs/Cargo.toml) via `package.metadata.docs.rs`
 
 ## web-codecs
